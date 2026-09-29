@@ -1,0 +1,7 @@
+Licença de Uso Pessoal - Projeto Rakino
+
+Este projeto foi desenvolvido como material de estudo e uso pessoal.
+Você pode copiar, modificar e reutilizar este código livremente para
+fins de aprendizado e em seus próprios projetos pessoais.
+
+Este software é fornecido "como está", sem garantias de qualquer tipo.

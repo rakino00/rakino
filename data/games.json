@@ -1,0 +1,20 @@
+[
+  {
+    "id": "corredor-neon",
+    "title": "Corredor Neon",
+    "description": "Protótipo de jogo endless-runner feito em Panda3D.",
+    "content": "Projeto de demonstração da seção Games.",
+    "readme": "# Corredor Neon\n\nProtótipo inicial, apenas para teste da engine.",
+    "status": "Protótipo",
+    "engine": "Panda3D",
+    "icon": "🏃"
+  },
+  {
+    "id": "puzzle-espacial",
+    "title": "Ideia: Puzzle Espacial",
+    "description": "Anotações iniciais de um jogo de puzzle ainda não iniciado.",
+    "content": "Projeto de demonstração no estágio de ideia.",
+    "status": "Ideia",
+    "icon": "🚀"
+  }
+]

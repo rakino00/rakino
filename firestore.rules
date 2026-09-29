@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cada usuário só enxerga e altera as PRÓPRIAS notations.
+    match /users/{uid}/notations/{id} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 150
+        && request.resource.data.priority in ['nv1', 'nv2', 'nv3']
+        && request.resource.data.type in ['task', 'reminder'];
+    }
+
+    // Todo o resto é bloqueado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
