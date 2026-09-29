@@ -13,8 +13,8 @@
  * funciona normalmente no modo visitante.
  */
 export default {
-  apiKey: 'COLE_AQUI',
-  authDomain: 'SEU-PROJETO.firebaseapp.com',
-  projectId: 'SEU-PROJETO',
-  appId: 'COLE_AQUI',
+  apiKey: 'AIzaSyA8FMJVPn3U-62euJCJYphJZpntQlgKMxY',
+  authDomain: 'rakino00.firebaseapp.com',
+  projectId: 'rakino00',
+  appId: '1:446018703392:web:97457e522bf8b5cd23ac45',
 };
