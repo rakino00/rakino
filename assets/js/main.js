@@ -10,6 +10,7 @@ import * as Notes from './notations.js';
 import * as Profile from './profile.js';
 import * as Chat from './chat.js';
 import { renderPython, bindPython } from './python.js';
+import { mountRunner } from './runner.js';
 
 const ADMIN_EMAIL = 'rakifernn@gmail.com';
 
@@ -106,7 +107,7 @@ function buildPanels() {
   Notes.bind(panels.notations); Notes.mount(panels.notations);
   Notes.onChange(() => {
     const h = $('#homeNotes'); if (h) h.innerHTML = Notes.pendingHTML(5);
-    if (!$('#dockRadial')?.matches(':hover')) closeDockRadial();
+    renderDock(); if (!$('#dockRadial')?.matches(':hover')) closeDockRadial();
   });
 }
 
@@ -130,10 +131,11 @@ async function renderTab(id) {
 async function renderHome() {
   const web = await getData('web');
   const u = session.user, first = u ? (u.displayName || '').split(' ')[0] : '';
-  panels.home.innerHTML = `<div class="hero"><h1>${u ? `Olá${first ? ', ' + esc(first) : ''} 👋` : 'Bem-vindo ao Rakino ✦'}</h1>
+  panels.home.innerHTML = `<div class="hero"><h1>${u ? `Olá${first ? ', ' + esc(first) : ''}` : 'Bem-vindo ao Rakino ✦'}</h1>
     <p>${u ? 'Seu painel pessoal de projetos e notations.' : 'Projetos, Python e suas notations.'}</p></div>
-    ${u ? `<h2 class="section-title"><span class="accent">🗒</span> Tarefas pendentes</h2><div class="notation-list" id="homeNotes">${Notes.pendingHTML(5)}</div>` : ''}
-    <h2 class="section-title"><span class="accent">🌐</span> Web Projects</h2>${rowOrEmpty(web,'web')}`;
+    ${u ? `<h2 class="section-title"><span class="accent">🗒</span> Anotações e tarefas pendentes</h2><div class="notation-list" id="homeNotes">${Notes.pendingHTML(5)}</div>` : ''}
+    <section class="runner-wrap" id="homeRunner"></section><div class="home-projects-head"><h2 class="section-title"><span class="accent">🌐</span> Web Projects</h2><span class="carousel-count">${web.length} projetos</span></div><div class="home-projects-carousel">${rowOrEmpty(web,'web')}</div>`;
+  mountRunner($('#homeRunner'));
 }
 
 const bar = (title, extra='') => `<div class="modal-bar"><div class="modal-title">${esc(title)}</div>${extra}<button class="icon-btn" data-close aria-label="Fechar">${icon('close')}</button></div>`;
@@ -167,32 +169,87 @@ function renderDock() {
 }
 
 let dockHoverTimer = 0;
-function dockRadialItems() {
-  const items = [`<button class="dock-radial-item" data-radial-tab="web" style="--dx:-48px;--dy:-74px">${icon('globe')}<span>Web Projects</span></button>`];
-  const pending = Notes.pendingCount();
-  if (session.user && pending > 0) {
-    items.push(`<button class="dock-radial-item" data-radial-tab="notations" style="--dx:48px;--dy:-74px">${icon('note')}<span>Pendentes <b>${pending}</b></span></button>`);
+let dockHoverToken = 0;
+
+function previewWeb(p) {
+  const safeFile = esc(p.file || '');
+  return `<div class="dock-preview-media"><iframe src="${safeFile}" title="Prévia de ${esc(p.title)}" loading="lazy" tabindex="-1" aria-hidden="true"></iframe></div>`;
+}
+function previewNote(n) {
+  const prio = n.priority === 'nv3' ? 'Alta' : n.priority === 'nv2' ? 'Média' : 'Baixa';
+  return `<div class="dock-note-preview"><span class="dock-note-prio ${esc(n.priority || 'nv1')}">${prio}</span><strong>${esc(n.title || 'Sem título')}</strong><small>${esc(n.description || (n.type === 'reminder' ? 'Lembrete' : 'Tarefa'))}</small></div>`;
+}
+function previewPython() {
+  return `<div class="dock-code-preview"><span>Python · Pyodide</span><code>for projeto in rakino:\n    print(projeto)</code></div>`;
+}
+function radialButton({ action, label, media, cls = '', dx = 0, dy = 0 }) {
+  return `<button class="dock-radial-item ${cls}" data-radial-action="${esc(action)}" style="--dx:${dx}px;--dy:${dy}px" title="${esc(label)}">${media}<span class="dock-radial-label">${esc(label)}</span></button>`;
+}
+
+function fanOffsets(count) {
+  if (!count) return [];
+  if (count === 1) return [[0, -148]];
+  const radius = count <= 4 ? 176 : count <= 6 ? 188 : 202;
+  const start = -140, end = -40;
+  return Array.from({length: count}, (_, i) => {
+    const a = (start + (end-start) * (i / (count-1))) * Math.PI / 180;
+    return [Math.round(Math.cos(a) * radius), Math.round(Math.sin(a) * radius)];
+  });
+}
+
+async function dockRadialItems(tab) {
+  if (tab === 'web') {
+    const list = await getData('web');
+    const offsets = fanOffsets(list.length);
+    return list.map((p, i) => radialButton({
+      action: `web:${p.id}`, label: p.title, media: previewWeb(p), cls: 'dock-web-preview', dx: offsets[i][0], dy: offsets[i][1]
+    })).join('');
   }
-  return items.join('');
+  if (tab === 'python') {
+    return radialButton({ action: 'tab:python', label: 'Laboratório Python', media: previewPython(), cls: 'dock-python-preview', dx: 0, dy: -148 });
+  }
+  if (tab === 'notations') {
+    if (!session.user) return radialButton({ action: 'login:notations', label: 'Entrar para ver anotações', media: '<div class="dock-lock-preview">🔒</div>', cls: 'dock-note-preview-card', dx: 0, dy: -148 });
+    const list = Notes.pendingItems();
+    if (!list.length) return radialButton({ action: 'tab:notations', label: 'Nenhuma tarefa pendente', media: '<div class="dock-empty-preview">✓</div>', cls: 'dock-note-preview-card', dx: 0, dy: -148 });
+    const offsets = fanOffsets(list.length);
+    return list.map((n, i) => radialButton({ action: `note:${n.id}`, label: n.title, media: previewNote(n), cls: 'dock-note-preview-card', dx: offsets[i][0], dy: offsets[i][1] })).join('');
+  }
+  if (tab === 'home') {
+    const items = [
+      radialButton({ action: 'tab:web', label: 'Web Projects', media: '<div class="dock-category-preview web">🌐</div>', cls: 'dock-category-card', dx: -122, dy: -112 }),
+      radialButton({ action: 'tab:python', label: 'Python', media: '<div class="dock-category-preview python">🐍</div>', cls: 'dock-category-card', dx: 0, dy: -158 }),
+    ];
+    if (session.user && Notes.pendingCount()) items.push(radialButton({ action: 'tab:notations', label: 'Anotações e tarefas pendentes', media: '<div class="dock-category-preview notes">🗒</div>', cls: 'dock-category-card', dx: 122, dy: -112 }));
+    return items.join('');
+  }
+  if (tab === 'admin') return radialButton({ action: 'tab:admin', label: 'Painel administrativo', media: '<div class="dock-category-preview admin">⚙</div>', cls: 'dock-category-card', dx: 0, dy: -148 });
+  return '';
 }
 
 function closeDockRadial() {
   const radial = $('#dockRadial');
   if (!radial) return;
   clearTimeout(dockHoverTimer);
+  dockHoverToken++;
   radial.classList.remove('open');
   radial.setAttribute('aria-hidden', 'true');
+  radial.innerHTML = '';
 }
 
-function openDockRadial(anchor) {
+async function openDockRadial(anchor) {
   const radial = $('#dockRadial');
   if (!radial) return;
+  const token = ++dockHoverToken;
   const rect = anchor.getBoundingClientRect();
-  radial.innerHTML = dockRadialItems();
   radial.style.left = `${rect.left + rect.width / 2}px`;
   radial.style.top = `${rect.top + rect.height / 2}px`;
+  radial.innerHTML = '<div class="dock-radial-loading">Abrindo…</div>';
   radial.classList.add('open');
   radial.setAttribute('aria-hidden', 'false');
+  const html = await dockRadialItems(anchor.dataset.tab);
+  if (token !== dockHoverToken) return;
+  radial.innerHTML = html;
 }
 
 function bindDockHover() {
@@ -207,7 +264,7 @@ function bindDockHover() {
       dockHoverTimer = setTimeout(() => {
         const radial = $('#dockRadial');
         if (!radial?.matches(':hover')) closeDockRadial();
-      }, 120);
+      }, 180);
     });
   });
 }
@@ -216,16 +273,26 @@ function bindRadial() {
   const radial = $('#dockRadial');
   radial.addEventListener('mouseenter', () => clearTimeout(dockHoverTimer));
   radial.addEventListener('mouseleave', () => {
-    dockHoverTimer = setTimeout(closeDockRadial, 120);
+    dockHoverTimer = setTimeout(closeDockRadial, 180);
   });
   radial.addEventListener('click', e => {
-    const b = e.target.closest('[data-radial-tab]');
+    const b = e.target.closest('[data-radial-action]');
     if (!b) return;
+    const action = b.dataset.radialAction || '';
     closeDockRadial();
-    const tab = b.dataset.radialTab;
-    const def = tabDef(tab);
-    if (def.access === 'user' && !session.user) return askLogin(def);
-    location.hash = `#/${tab}`;
+    if (action.startsWith('web:')) return showItem('web', action.slice(4), true);
+    if (action.startsWith('note:')) {
+      if (!session.user) return goLogin();
+      location.hash = '#/notations';
+      return setTimeout(() => Notes.openEditor(action.slice(5)), 0);
+    }
+    if (action.startsWith('login:')) return askLogin(tabDef(action.slice(6)) || tabDef('notations'));
+    if (action.startsWith('tab:')) {
+      const tab = action.slice(4), def = tabDef(tab);
+      if (def?.access === 'user' && !session.user) return askLogin(def);
+      if (def?.access === 'admin' && !isAdmin()) return;
+      location.hash = `#/${tab}`;
+    }
   });
 }
 
@@ -317,10 +384,22 @@ function goLogin() { session.guest=false; sessionStorage.removeItem('rakino_gues
 function hideBoot(){const b=$('#boot');if(!b)return;b.classList.add('done');setTimeout(()=>b.remove(),400);}
 
 function bindTheme() {
-  const key='rakino_theme', saved=localStorage.getItem(key);
-  const setTheme=t=>{document.documentElement.dataset.theme=t;localStorage.setItem(key,t);$('#themeToggle').textContent=t==='light'?'☀️':'🌙';$('#themeToggle').title=t==='light'?'Tema escuro':'Tema claro';};
-  setTheme(saved||'dark');
-  $('#themeToggle').onclick=()=>setTheme(document.documentElement.dataset.theme==='light'?'dark':'light');
+  const setMode = (mode) => {
+    const value = mode === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = value;
+    localStorage.setItem('rakino_color_mode', value);
+    const btn = $('#themeToggle');
+    if (btn) {
+      btn.textContent = value === 'light' ? '☀️' : '🌙';
+      btn.title = value === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro';
+    }
+  };
+  setMode(localStorage.getItem('rakino_color_mode') || 'dark');
+  $('#themeToggle').onclick = async () => {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    setMode(next);
+    if (session.user && Profile.saveColorMode) await Profile.saveColorMode(session.user, next);
+  };
 }
 
 function bindGlobal() {

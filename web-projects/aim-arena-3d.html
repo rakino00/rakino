@@ -16,8 +16,11 @@ canvas{display:block;width:100%;height:100%}
 .touch{position:fixed;inset:auto 18px 18px;display:flex;justify-content:flex-end;z-index:8}.touch button{width:78px;height:78px;border-radius:50%;background:#07101dcc;border:1px solid #fff3;color:#fff;font-size:14px;font-weight:700}.hidden{display:none!important}
 @media(min-width:701px){.touch{display:none}}
 </style>
-</head>
-<body>
+<style>
+/* Rakino project navigation */
+.rakino-home{position:fixed;left:14px;top:14px;z-index:9999;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 12px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(7,13,20,.82);color:#eafaff;text-decoration:none;font:700 12px/1 Segoe UI,system-ui,sans-serif;backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.25)}.rakino-home:hover{border-color:#22d3ee;color:#22d3ee;transform:translateY(-1px)}
+</style></head>
+<body><a class="rakino-home" href="../index.html#/home" aria-label="Voltar ao início">← Início</a>
 <div id="hud"><div class="stats"><div class="box">Alvos: <b id="score">0</b></div><div class="box">Tempo: <b id="time">60.0</b>s</div><div class="box">Perfeitos: <b id="perfect">0</b></div></div><div class="box help">PC: arraste com o botão direito para mirar e clique esquerdo para marcar. Celular: arraste a tela para mirar e use o botão.</div></div>
 <div id="cross"></div><div class="touch"><button id="mark">MARCAR</button></div>
 <div id="start" class="overlay"><section class="panel"><h1>🎯 Aim Arena 3D</h1><p>Treino de precisão em terceira pessoa, sem armas. Alvos esféricos ficam ricocheteando pela arena. Ao serem marcados, desaparecem por 10 segundos e retornam em dobro.</p><p class="small">A partida dura 60 segundos. Um acerto feito até 2 segundos depois do aparecimento do alvo conta como <b>perfeito</b>.</p><button class="btn" id="begin">Começar treino</button></section></div>

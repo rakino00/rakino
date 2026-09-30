@@ -24,6 +24,7 @@ export const onChange = (fn) => { listeners.add(fn); return () => listeners.dele
 export const isLoaded = () => loaded;
 export const pendingCount = () => items.reduce((count, item) => count + (!item.completed ? 1 : 0), 0);
 export const allItems = () => [...items].sort(cmp);
+export const pendingItems = () => items.filter((item) => !item.completed).sort(cmp);
 export const getItem = (id) => items.find((item) => item.id === id) || null;
 
 /* ------------------------------ dados ------------------------------ */
