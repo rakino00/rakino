@@ -50,25 +50,34 @@ function escSvg(v) { return String(v).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'
 async function getData(kind) {
   if (cache[kind]) return cache[kind];
   if (kind !== 'web') return [];
+
+  // A lista do repositório é a base. O Firestore pode acrescentar/alterar projetos,
+  // mas nunca deve esconder projetos que já estão publicados no GitHub.
+  let localList = [];
+  try {
+    const res = await fetch(`data/${DATA_FILE[kind]}.json?v=20260930`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status);
+    localList = await res.json();
+  } catch (err) {
+    console.warn('[Rakino] falha ao ler JSON local', kind, err);
+  }
+
   try {
     const { db, fs } = Auth.ctx();
     if (db && fs) {
       const snap = await fs.getDocs(fs.collection(db, 'webProjects'));
-      if (!snap.empty) {
-        cache[kind] = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
-        return cache[kind];
-      }
+      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const merged = new Map(localList.map(p => [p.id, p]));
+      cloudList.forEach(p => merged.set(p.id, { ...(merged.get(p.id) || {}), ...p }));
+      cache[kind] = [...merged.values()].sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
+      return cache[kind];
     }
-  } catch (err) { console.warn('[Rakino] Firestore webProjects indisponível:', err); }
-  try {
-    const res = await fetch(`data/${DATA_FILE[kind]}.json`, { cache: 'no-cache' });
-    if (!res.ok) throw new Error(res.status);
-    cache[kind] = await res.json();
   } catch (err) {
-    console.warn('[Rakino] falha ao ler dados', kind, err);
-    toast('Não consegui carregar os Web Projects.', 4000);
-    return [];
+    console.warn('[Rakino] Firestore webProjects indisponível:', err);
   }
+
+  cache[kind] = localList.sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
+  if (!cache[kind].length) toast('Não consegui carregar os Web Projects.', 4000);
   return cache[kind];
 }
 
