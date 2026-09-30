@@ -12,6 +12,25 @@ service cloud.firestore {
         && request.resource.data.type in ['task', 'reminder'];
     }
 
+    // Salas do Rakino Race: lobby e sinalização simples para o multiplayer.
+    match /raceRooms/{roomId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.host == request.auth.uid;
+      allow update: if request.auth != null && resource.data.host == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.host == request.auth.uid;
+
+      match /players/{uid} {
+        allow read: if request.auth != null;
+        allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+      }
+
+      match /shots/{shotId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && request.resource.data.shooter == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
     // Web Projects são públicos para leitura. Somente o administrador pode alterar.
     match /webProjects/{id} {
       allow read: if true;

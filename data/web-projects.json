@@ -10,5 +10,34 @@
       "música",
       "SVG"
     ]
+  },
+  {
+    "id": "rakino-race",
+    "file": "web-projects/rakino-race.html",
+    "type": "html",
+    "title": "Rakino Race 3D",
+    "description": "Corrida infinita multiplayer em terceira pessoa, com aceleração progressiva e tiros que reduzem a velocidade.",
+    "icon": "🏁",
+    "tags": [
+      "jogo",
+      "3D",
+      "multiplayer",
+      "Firebase"
+    ],
+    "order": 10
+  },
+  {
+    "id": "aim-arena-3d",
+    "file": "web-projects/aim-arena-3d.html",
+    "type": "html",
+    "title": "Aim Arena 3D",
+    "description": "Treino de mira em terceira pessoa com bolas que ricocheteiam, reaparecem em dobro e pontuação em 60 segundos.",
+    "icon": "🎯",
+    "tags": [
+      "jogo",
+      "3D",
+      "mira"
+    ],
+    "order": 20
   }
 ]
