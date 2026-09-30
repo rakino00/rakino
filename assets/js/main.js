@@ -104,7 +104,11 @@ function buildPanels() {
   Notes.bind(panels.notations); Notes.mount(panels.notations);
   Notes.onChange(() => {
     const h = $('#homeNotes'); if (h) h.innerHTML = Notes.pendingHTML(5);
-    if (!$('#dockRadial')?.matches(':hover')) closeDockRadial();
+    const radial = $('#dockRadial');
+    if (radial?.matches(':hover')) {
+      const anchor = document.querySelector('.dock-item[data-tab="notations"]');
+      if (anchor) openDockRadial(anchor);
+    } else closeDockRadial();
   });
 }
 
@@ -165,13 +169,62 @@ function renderDock() {
 }
 
 let dockHoverTimer = 0;
-function dockRadialItems() {
-  const items = [`<button class="dock-radial-item" data-radial-tab="web" style="--dx:-48px;--dy:-74px">${icon('globe')}<span>Web Projects</span></button>`];
-  const pending = Notes.pendingCount();
-  if (session.user && pending > 0) {
-    items.push(`<button class="dock-radial-item" data-radial-tab="notations" style="--dx:48px;--dy:-74px">${icon('note')}<span>Pendentes <b>${pending}</b></span></button>`);
+let dockRadialRequest = 0;
+
+function radialPosition(index, total) {
+  // Os itens ficam em arco acima do botão, mantendo cada subitem independente.
+  const angleStart = -150;
+  const angleEnd = -30;
+  const angle = total <= 1 ? -90 : angleStart + ((angleEnd - angleStart) * index) / (total - 1);
+  const rad = angle * Math.PI / 180;
+  const radius = total > 8 ? 112 : total > 5 ? 100 : 88;
+  return { dx: Math.round(Math.cos(rad) * radius), dy: Math.round(Math.sin(rad) * radius) };
+}
+
+function radialButton({ id, label, iconName, index, total, kind, disabled = false }) {
+  const { dx, dy } = radialPosition(index, total);
+  return `<button class="dock-radial-item" data-radial-kind="${esc(kind)}" data-radial-id="${esc(id)}"
+      style="--dx:${dx}px;--dy:${dy}px" aria-label="${esc(label)}"${disabled ? ' disabled' : ''}>
+      ${icon(iconName)}<span>${esc(label)}</span></button>`;
+}
+
+function notationLabel(note) {
+  const title = String(note.title || 'Sem título').trim();
+  return `${note.completed ? '✓' : '•'} ${title}`;
+}
+
+async function dockRadialItems(tab) {
+  if (tab === 'web') {
+    const projects = await getData('web');
+    if (!projects.length) return radialButton({ id: 'empty', label: 'Nenhum projeto', iconName: 'globe', index: 0, total: 1, kind: 'empty' });
+    return projects.map((project, index) => radialButton({
+      id: project.id,
+      label: project.title || 'Web Project',
+      iconName: project.icon || 'globe',
+      index,
+      total: projects.length,
+      kind: 'web'
+    })).join('');
   }
-  return items.join('');
+
+  if (tab === 'notations') {
+    if (!session.user) return radialButton({ id: 'login', label: 'Entrar com Google', iconName: 'note', index: 0, total: 1, kind: 'login' });
+    const notes = Notes.allItems();
+    if (!notes.length) return radialButton({ id: 'empty', label: 'Nenhuma nota', iconName: 'note', index: 0, total: 1, kind: 'empty' });
+    return notes.map((note, index) => radialButton({
+      id: note.id,
+      label: notationLabel(note),
+      iconName: note.completed ? 'check' : 'note',
+      index,
+      total: notes.length,
+      kind: 'notation'
+    })).join('');
+  }
+
+  // Categorias sem subitens próprios continuam com um único atalho individual.
+  const def = tabDef(tab);
+  if (!def) return '';
+  return radialButton({ id: tab, label: def.label, iconName: def.icon, index: 0, total: 1, kind: 'tab' });
 }
 
 function closeDockRadial() {
@@ -182,15 +235,22 @@ function closeDockRadial() {
   radial.setAttribute('aria-hidden', 'true');
 }
 
-function openDockRadial(anchor) {
+async function openDockRadial(anchor) {
   const radial = $('#dockRadial');
   if (!radial) return;
+  const request = ++dockRadialRequest;
   const rect = anchor.getBoundingClientRect();
-  radial.innerHTML = dockRadialItems();
+  const tab = anchor.dataset.tab;
+  radial.classList.remove('open');
+  radial.setAttribute('aria-hidden', 'true');
+  radial.innerHTML = '<span class="dock-radial-loading">…</span>';
   radial.style.left = `${rect.left + rect.width / 2}px`;
   radial.style.top = `${rect.top + rect.height / 2}px`;
   radial.classList.add('open');
   radial.setAttribute('aria-hidden', 'false');
+  const html = await dockRadialItems(tab);
+  if (request !== dockRadialRequest) return;
+  radial.innerHTML = html;
 }
 
 function bindDockHover() {
@@ -210,6 +270,16 @@ function bindDockHover() {
   });
 }
 
+function openNotationFromRadial(id) {
+  const note = Notes.getItem(id);
+  if (!note) return;
+  location.hash = '#/notations';
+  requestAnimationFrame(() => {
+    const row = [...(panels.notations?.querySelectorAll('[data-id]') || [])].find((el) => el.dataset.id === id);
+    row?.querySelector('[data-edit]')?.click();
+  });
+}
+
 function bindRadial() {
   const radial = $('#dockRadial');
   radial.addEventListener('mouseenter', () => clearTimeout(dockHoverTimer));
@@ -217,13 +287,22 @@ function bindRadial() {
     dockHoverTimer = setTimeout(closeDockRadial, 120);
   });
   radial.addEventListener('click', e => {
-    const b = e.target.closest('[data-radial-tab]');
-    if (!b) return;
+    const b = e.target.closest('[data-radial-kind]');
+    if (!b || b.disabled) return;
+    const kind = b.dataset.radialKind;
+    const id = b.dataset.radialId;
     closeDockRadial();
-    const tab = b.dataset.radialTab;
-    const def = tabDef(tab);
-    if (def.access === 'user' && !session.user) return askLogin(def);
-    location.hash = `#/${tab}`;
+
+    if (kind === 'login') return goLogin();
+    if (kind === 'empty') return;
+    if (kind === 'web') return showItem('web', id, true);
+    if (kind === 'notation') return openNotationFromRadial(id);
+    if (kind === 'tab') {
+      const def = tabDef(id);
+      if (def?.access === 'user' && !session.user) return askLogin(def);
+      if (def?.access === 'admin' && !isAdmin()) return;
+      location.hash = `#/${id}`;
+    }
   });
 }
 

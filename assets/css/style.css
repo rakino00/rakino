@@ -331,3 +331,13 @@ html[data-theme="light"] .python-editor{background:#1b2030;color:#f4f6fb}
   .admin-row .btn{flex:1}
   .admin-status{margin-left:0}
 }
+
+/* Radial subitems: cada projeto/nota ocupa seu próprio balão. */
+.dock-radial-loading{
+  position:absolute;left:0;top:0;transform:translate(-50%,-50%);
+  width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+  background:var(--card);border:1px solid var(--border);color:var(--text-dim);
+}
+.dock-radial-item:disabled{cursor:default;opacity:.72}
+.dock-radial-item span{max-width:68px;overflow:hidden;text-overflow:ellipsis;text-align:center}
+@media (hover:none),(max-width:700px){.dock-radial-loading{display:none}}
