@@ -3,7 +3,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 const FIREBASE_VERSION='10.14.1',CDN=`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/`;
 const cfg={apiKey:'AIzaSyA8FMJVPn3U-62euJCYJphJZpntQlgKMxY',authDomain:'rakino00.firebaseapp.com',projectId:'rakino00',appId:'1:446018703392:web:97457e522bf8b5cd23ac45'};
 const [{initializeApp},{getAuth,onAuthStateChanged},{getFirestore,doc,setDoc,getDoc,onSnapshot,collection,addDoc,updateDoc,deleteDoc,serverTimestamp}]=await Promise.all([import(CDN+'firebase-app.js'),import(CDN+'firebase-auth.js'),import(CDN+'firebase-firestore.js')]);
-const app=initializeApp(cfg,{name:'rakinoRace3D'}),auth=getAuth(app),db=getFirestore(app),$=s=>document.querySelector(s);
+const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),$=s=>document.querySelector(s);
 const state={user:null,room:null,host:false,started:false,players:new Map(),my:{lane:1,dist:0,speed:150,ammo:1,slowUntil:0},last:performance.now()};let unsubRoom,unsubPlayers,unsubShots,syncTimer;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x87b7df);scene.fog=new THREE.Fog(0x87b7df,65,230);const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);camera.position.set(0,5,9);const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;$('#game').prepend(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xddeeff,0x334422,2.1));const sun=new THREE.DirectionalLight(0xffffff,2.3);sun.position.set(20,40,20);sun.castShadow=true;scene.add(sun);
