@@ -1,7 +1,7 @@
 {
   "name": "Rakino",
   "short_name": "Rakino",
-  "description": "Projetos web, experiências, tecnologia, jogos e notations.",
+  "description": "Web Projects, Python e Notations.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

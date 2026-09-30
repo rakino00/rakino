@@ -270,3 +270,41 @@ main{
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:420px){.user-name{display:none}}
+
+/* ---------- tema claro ---------- */
+html[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card-glass:rgba(255,255,255,.86);
+  --border:rgba(15,23,42,.12); --text:#172033; --text-dim:#5f6b7a;
+}
+html[data-theme="light"] body{background:var(--bg);color:var(--text)}
+html[data-theme="light"] .topbar{background:rgba(244,246,251,.94)}
+html[data-theme="light"] .dock{background:rgba(255,255,255,.96);box-shadow:0 12px 40px rgba(15,23,42,.15)}
+html[data-theme="light"] .modal-root{background:rgba(15,23,42,.45)}
+html[data-theme="light"] .modal-readme,
+html[data-theme="light"] .python-output{background:#eef1f6}
+html[data-theme="light"] .login{background:radial-gradient(900px 500px at 50% -10%,rgba(168,85,247,.14),transparent 70%),var(--bg)}
+.theme-toggle{width:42px;padding:0;font-size:1rem}
+
+/* ---------- Python ---------- */
+.python-lab{padding-bottom:20px}
+.python-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.python-toolbar select{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+.python-status{font-size:.8rem;color:var(--text-dim);margin-left:auto}
+.python-editor{display:block;width:100%;min-height:330px;resize:vertical;padding:16px;border-radius:16px;border:1px solid var(--border);background:#080a0f;color:#e7e9ee;font:14px/1.6 "Cascadia Code","Consolas",monospace;tab-size:4}
+.python-output{min-height:160px;margin:14px 0;padding:16px;border:1px solid var(--border);border-radius:16px;background:#05060a;color:var(--text);white-space:pre-wrap;overflow:auto;font:14px/1.55 "Cascadia Code","Consolas",monospace}
+html[data-theme="light"] .python-editor{background:#1b2030;color:#f4f6fb}
+
+/* ---------- admin ---------- */
+.admin-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 18px}
+.admin-status{margin-left:auto;color:var(--text-dim);font-size:.8rem}
+.admin-list{display:grid;gap:10px}
+.admin-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--card-glass)}
+.admin-row strong,.admin-row small{display:block}
+.admin-row small{color:var(--text-dim);margin-top:3px;font-size:.78rem}
+.admin-row .btn{min-height:38px;padding:0 12px}
+@media(max-width:600px){
+  .admin-row{align-items:flex-start;flex-direction:column}
+  .admin-row>div:last-child{width:100%;display:flex}
+  .admin-row .btn{flex:1}
+  .admin-status{margin-left:0}
+}

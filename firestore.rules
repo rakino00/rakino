@@ -2,7 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Cada usuário só enxerga e altera as PRÓPRIAS notations.
     match /users/{uid}/notations/{id} {
       allow read, delete: if request.auth != null && request.auth.uid == uid;
       allow create, update: if request.auth != null && request.auth.uid == uid
@@ -13,7 +12,13 @@ service cloud.firestore {
         && request.resource.data.type in ['task', 'reminder'];
     }
 
-    // Todo o resto é bloqueado.
+    // Web Projects são públicos para leitura. Somente o administrador pode alterar.
+    match /webProjects/{id} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null
+        && request.auth.token.email == 'rakifernn@gmail.com';
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

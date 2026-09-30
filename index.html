@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080A0F">
+<meta name="theme-color" content="#080A0F"><meta name="color-scheme" content="dark light">
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Rakino">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Rakino — experiências, tecnologia e jogos</title>
-<meta name="description" content="Espaço pessoal de projetos web, experiências, tecnologia e jogos.">
+<title>Rakino — Web Projects, Python e Notations</title>
+<meta name="description" content="Espaço pessoal de Web Projects, Python e Notations.">
 <meta property="og:title" content="Rakino">
-<meta property="og:description" content="Espaço pessoal de projetos web, experiências, tecnologia e jogos.">
+<meta property="og:description" content="Web Projects, Python e Notations.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
@@ -26,7 +26,7 @@
 <section id="login" class="login" hidden>
   <div class="login-card">
     <div class="login-logo">✦ Rakino</div>
-    <p class="login-sub">Projetos web, experiências, tecnologia e jogos.</p>
+    <p class="login-sub">Web Projects, Python e Notations.</p>
 
     <button id="btnGoogle" class="btn-google" type="button">
       <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3A12 12 0 0 1 12 24a12 12 0 0 1 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7A20 20 0 0 0 4 24a20 20 0 0 0 20 20c11 0 20-8 20-20 0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8A12 12 0 0 1 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7A20 20 0 0 0 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2A12 12 0 0 1 12.700 28.100l-6.500 5C9.500 39.600 16.200 44 24 44z"/><path fill="#1976D2" d="M43.600 20.100H42V20H24v8h11.300a12 12 0 0 1-4.100 5.600l6.200 5.200C37 39.200 44 34 44 24c0-1.300-.1-2.600-.4-3.900z"/></svg>
@@ -37,7 +37,7 @@
     <div class="login-or"><span>ou</span></div>
 
     <button id="btnGuest" class="btn-ghost" type="button">Só visitar</button>
-    <p class="login-hint">Visitantes veem <strong>Web Projects</strong> e <strong>Experiences</strong>.<br>Com Google: Notations, Tech, Games e o resto.</p>
+    <p class="login-hint">Visitantes veem <strong>Web Projects</strong> e <strong>Python</strong>.<br>Com Google, você também acessa suas <strong>Notations</strong>.</p>
   </div>
 </section>
 
@@ -46,6 +46,7 @@
   <header class="topbar">
     <a class="logo" href="#/home">✦ Rakino</a>
     <div class="topbar-space"></div>
+    <button id="themeToggle" class="chip-btn theme-toggle" type="button" aria-label="Alternar tema" title="Tema claro">🌙</button>
     <div id="userChip" class="user-chip"></div>
   </header>
 
