@@ -22,6 +22,7 @@ const listeners = new Set();
 
 export const onChange = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
 export const isLoaded = () => loaded;
+export const pendingCount = () => items.reduce((count, item) => count + (!item.completed ? 1 : 0), 0);
 
 /* ------------------------------ dados ------------------------------ */
 export function start(user) {

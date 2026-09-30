@@ -152,6 +152,29 @@ main{
 }
 @media (hover:none){.dock-item .tip{display:none}}
 
+/* ---------- dock radial ---------- */
+.dock-radial{
+  position:fixed;z-index:75;width:2px;height:2px;pointer-events:none;
+}
+.dock-radial.open{pointer-events:auto}
+.dock-radial-item{
+  position:absolute;left:0;top:0;width:78px;height:78px;border-radius:50%;
+  display:grid;place-items:center;align-content:center;gap:3px;
+  transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.55);
+  opacity:0;pointer-events:none;
+  border:1px solid rgba(0,240,255,.25);background:rgba(15,20,32,.98);color:var(--text);
+  box-shadow:0 14px 34px rgba(0,0,0,.55),0 0 28px rgba(168,85,247,.14);
+  transition:transform .18s ease,opacity .15s ease,border-color .18s ease;
+}
+.dock-radial.open .dock-radial-item{opacity:1;pointer-events:auto;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1)}
+.dock-radial-item:hover{border-color:var(--cyan);color:var(--cyan);transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.08)!important}
+.dock-radial-item svg{width:25px;height:25px}
+.dock-radial-item span{font-size:.62rem;line-height:1;white-space:nowrap}
+.dock-radial-item b{color:var(--amber)}
+html[data-theme="light"] .dock-radial-item{background:rgba(255,255,255,.98);box-shadow:0 14px 34px rgba(15,23,42,.18)}
+@media (hover:none),(max-width:700px){.dock-radial{display:none}}
+@media (prefers-reduced-motion:reduce){.dock-radial-item{transition:none}}
+
 /* ---------- FAB ---------- */
 .fab{
   position:fixed;right:calc(16px + var(--sar));bottom:calc(var(--dock-h) + 26px + var(--sab));z-index:55;

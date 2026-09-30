@@ -102,7 +102,10 @@ function buildPanels() {
     s.id = 'tab-' + t.id; s.className = 'tab-panel'; main.appendChild(s); panels[t.id] = s;
   });
   Notes.bind(panels.notations); Notes.mount(panels.notations);
-  Notes.onChange(() => { const h = $('#homeNotes'); if (h) h.innerHTML = Notes.pendingHTML(5); });
+  Notes.onChange(() => {
+    const h = $('#homeNotes'); if (h) h.innerHTML = Notes.pendingHTML(5);
+    if (!$('#dockRadial')?.matches(':hover')) closeDockRadial();
+  });
 }
 
 async function renderTab(id) {
@@ -158,6 +161,70 @@ function renderDock() {
     const locked = t.access === 'user' && !session.user;
     return `<button class="dock-item${locked?' locked':''}${t.id===activeTab?' active':''}" data-tab="${t.id}" data-label="${esc(t.label)}" aria-label="${esc(t.label)}${locked?' (requer login)':''}">${icon(t.icon)}<span class="tip">${esc(t.label)}</span></button>`;
   }).join('');
+  bindDockHover();
+}
+
+let dockHoverTimer = 0;
+function dockRadialItems() {
+  const items = [`<button class="dock-radial-item" data-radial-tab="web" style="--dx:-48px;--dy:-74px">${icon('globe')}<span>Web Projects</span></button>`];
+  const pending = Notes.pendingCount();
+  if (session.user && pending > 0) {
+    items.push(`<button class="dock-radial-item" data-radial-tab="notations" style="--dx:48px;--dy:-74px">${icon('note')}<span>Pendentes <b>${pending}</b></span></button>`);
+  }
+  return items.join('');
+}
+
+function closeDockRadial() {
+  const radial = $('#dockRadial');
+  if (!radial) return;
+  clearTimeout(dockHoverTimer);
+  radial.classList.remove('open');
+  radial.setAttribute('aria-hidden', 'true');
+}
+
+function openDockRadial(anchor) {
+  const radial = $('#dockRadial');
+  if (!radial) return;
+  const rect = anchor.getBoundingClientRect();
+  radial.innerHTML = dockRadialItems();
+  radial.style.left = `${rect.left + rect.width / 2}px`;
+  radial.style.top = `${rect.top + rect.height / 2}px`;
+  radial.classList.add('open');
+  radial.setAttribute('aria-hidden', 'false');
+}
+
+function bindDockHover() {
+  const dock = $('#dock');
+  if (!dock) return;
+  dock.querySelectorAll('.dock-item').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      clearTimeout(dockHoverTimer);
+      openDockRadial(btn);
+    });
+    btn.addEventListener('mouseleave', () => {
+      dockHoverTimer = setTimeout(() => {
+        const radial = $('#dockRadial');
+        if (!radial?.matches(':hover')) closeDockRadial();
+      }, 120);
+    });
+  });
+}
+
+function bindRadial() {
+  const radial = $('#dockRadial');
+  radial.addEventListener('mouseenter', () => clearTimeout(dockHoverTimer));
+  radial.addEventListener('mouseleave', () => {
+    dockHoverTimer = setTimeout(closeDockRadial, 120);
+  });
+  radial.addEventListener('click', e => {
+    const b = e.target.closest('[data-radial-tab]');
+    if (!b) return;
+    closeDockRadial();
+    const tab = b.dataset.radialTab;
+    const def = tabDef(tab);
+    if (def.access === 'user' && !session.user) return askLogin(def);
+    location.hash = `#/${tab}`;
+  });
 }
 
 function activate(tab) {
@@ -255,6 +322,7 @@ function bindTheme() {
 }
 
 function bindGlobal() {
+  bindRadial();
   $('#dock').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;const def=tabDef(b.dataset.tab);if(def.access==='user'&&!session.user)return askLogin(def);if(def.access==='admin'&&!isAdmin())return;location.hash='#/'+def.id;});
   $('#main').addEventListener('click',e=>{const c=e.target.closest('[data-open]');if(c)showItem(c.dataset.kind,c.dataset.id,true);});
   $('#main').addEventListener('keydown',e=>{const c=e.target.closest('[data-open]');if(c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();showItem(c.dataset.kind,c.dataset.id,true);}});

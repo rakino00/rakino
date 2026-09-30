@@ -12,6 +12,20 @@
     ]
   },
   {
+    "id": "rakinofood",
+    "file": "web-projects/RakinoFood.html",
+    "type": "html",
+    "title": "RakinoFood — Gestão de Pedidos",
+    "description": "Protótipo de gestão para restaurante: Salão, Cozinha, Escritório, cardápio, pedidos, compras e balanço.",
+    "icon": "🍽️",
+    "tags": [
+      "restaurante",
+      "pedidos",
+      "gestão",
+      "financeiro"
+    ]
+  },
+  {
     "id": "rakino-race",
     "file": "web-projects/rakino-race.html",
     "type": "html",
@@ -22,8 +36,7 @@
       "jogo",
       "3D",
       "single player"
-    ],
-    "order": 10
+    ]
   },
   {
     "id": "aim-arena-3d",
@@ -37,7 +50,6 @@
       "3D",
       "treino",
       "mira"
-    ],
-    "order": 20
+    ]
   }
 ]
