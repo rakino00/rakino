@@ -15,14 +15,13 @@
     "id": "rakino-race",
     "file": "web-projects/rakino-race.html",
     "type": "html",
-    "title": "Rakino Race 3D",
-    "description": "Corrida infinita multiplayer em terceira pessoa, com aceleração progressiva e tiros que reduzem a velocidade.",
+    "title": "Rakino Race 3D — Single Player",
+    "description": "Corrida infinita em terceira pessoa contra pilotos controlados pelo computador, com aceleração progressiva e cargas que reduzem temporariamente a velocidade dos adversários.",
     "icon": "🏁",
     "tags": [
       "jogo",
       "3D",
-      "multiplayer",
-      "Firebase"
+      "single player"
     ],
     "order": 10
   },
