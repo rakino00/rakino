@@ -3,19 +3,19 @@
     "id": "acordeplus",
     "file": "web-projects/acordePlus.html",
     "type": "html",
-    "title": "Círculo das Quintas",
+    "title": "acordePlus",
     "description": "Roda interativa das tonalidades com diagramas de acordes para violão.",
     "icon": "🎸",
     "tags": [
       "música",
-      "SVG"
+      "teoria"
     ]
   },
   {
     "id": "rakinofood",
     "file": "web-projects/RakinoFood.html",
     "type": "html",
-    "title": "RakinoFood — Gestão de Pedidos",
+    "title": "RakinoFood",
     "description": "Protótipo de gestão para restaurante: Salão, Cozinha, Escritório, cardápio, pedidos, compras e balanço.",
     "icon": "🍽️",
     "tags": [
@@ -34,7 +34,8 @@
     "icon": "🏁",
     "tags": [
       "jogo",
-      "corrida"
+      "corrida",
+	  "3D"
     ]
   },
   {
@@ -55,13 +56,13 @@
     "id": "puzzle-suffers",
     "file": "web-projects/puzzle-suffers.html",
     "type": "html",
-    "title": "puzzle suffers",
+    "title": "Puzzle Suffers v2",
     "description": "Labirinto 3D com WASD, colisão sólida nas paredes e inimigos, câmera orbital protegida e Summon Enemy.",
     "icon": "🎯",
     "tags": [
       "jogo",
       "labirinto",
-      "mira"
+      "fps"
     ]
   }
 ]
