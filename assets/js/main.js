@@ -69,9 +69,13 @@ async function getData(kind) {
     const { db, fs } = Auth.ctx();
     if (db && fs) {
       const snap = await fs.getDocs(fs.collection(db, 'webProjects'));
-      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const merged = new Map(localList.map(p => [p.id, p]));
-      cloudList.forEach(p => merged.set(p.id, { ...(merged.get(p.id) || {}), ...p }));
+      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        // Legacy alias: o antigo projeto Race/Space não deve reaparecer do Firestore
+        // depois da migração para Rakino Race 3D.
+        .filter(p => p.id !== 'rakino-space' && p.file !== 'web-projects/rakino-space.html');
+      const merged = new Map(cloudList.map(p => [p.id, p]));
+      // O catálogo versionado do repositório é a fonte de verdade para os projetos publicados.
+      localList.forEach(p => merged.set(p.id, { ...(merged.get(p.id) || {}), ...p }));
       cache[kind] = [...merged.values()].sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
       return cache[kind];
     }
@@ -182,48 +186,33 @@ function previewNote(n) {
 function previewPython() {
   return `<div class="dock-code-preview"><span>Python · Pyodide</span><code>for projeto in rakino:\n    print(projeto)</code></div>`;
 }
-function radialButton({ action, label, media, cls = '', dx = 0, dy = 0 }) {
-  return `<button class="dock-radial-item ${cls}" data-radial-action="${esc(action)}" style="--dx:${dx}px;--dy:${dy}px" title="${esc(label)}">${media}<span class="dock-radial-label">${esc(label)}</span></button>`;
-}
-
-function fanOffsets(count) {
-  if (!count) return [];
-  if (count === 1) return [[0, -148]];
-  const radius = count <= 4 ? 176 : count <= 6 ? 188 : 202;
-  const start = -140, end = -40;
-  return Array.from({length: count}, (_, i) => {
-    const a = (start + (end-start) * (i / (count-1))) * Math.PI / 180;
-    return [Math.round(Math.cos(a) * radius), Math.round(Math.sin(a) * radius)];
-  });
+function radialButton({ action, label, media, cls = '' }) {
+  return `<button class="dock-radial-item ${cls}" data-radial-action="${esc(action)}" title="${esc(label)}">${media}<span class="dock-radial-label">${esc(label)}</span></button>`;
 }
 
 async function dockRadialItems(tab) {
   if (tab === 'web') {
     const list = await getData('web');
-    const offsets = fanOffsets(list.length);
-    return list.map((p, i) => radialButton({
-      action: `web:${p.id}`, label: p.title, media: previewWeb(p), cls: 'dock-web-preview', dx: offsets[i][0], dy: offsets[i][1]
-    })).join('');
+    return list.map(p => radialButton({ action: `web:${p.id}`, label: p.title, media: previewWeb(p), cls: 'dock-web-preview' })).join('');
   }
   if (tab === 'python') {
-    return radialButton({ action: 'tab:python', label: 'Laboratório Python', media: previewPython(), cls: 'dock-python-preview', dx: 0, dy: -148 });
+    return radialButton({ action: 'tab:python', label: 'Laboratório Python', media: previewPython(), cls: 'dock-python-preview' });
   }
   if (tab === 'notations') {
-    if (!session.user) return radialButton({ action: 'login:notations', label: 'Entrar para ver anotações', media: '<div class="dock-lock-preview">🔒</div>', cls: 'dock-note-preview-card', dx: 0, dy: -148 });
+    if (!session.user) return radialButton({ action: 'login:notations', label: 'Entrar para ver anotações', media: '<div class="dock-lock-preview">🔒</div>', cls: 'dock-note-preview-card' });
     const list = Notes.pendingItems();
-    if (!list.length) return radialButton({ action: 'tab:notations', label: 'Nenhuma tarefa pendente', media: '<div class="dock-empty-preview">✓</div>', cls: 'dock-note-preview-card', dx: 0, dy: -148 });
-    const offsets = fanOffsets(list.length);
-    return list.map((n, i) => radialButton({ action: `note:${n.id}`, label: n.title, media: previewNote(n), cls: 'dock-note-preview-card', dx: offsets[i][0], dy: offsets[i][1] })).join('');
+    if (!list.length) return radialButton({ action: 'tab:notations', label: 'Nenhuma tarefa pendente', media: '<div class="dock-empty-preview">✓</div>', cls: 'dock-note-preview-card' });
+    return list.map(n => radialButton({ action: `note:${n.id}`, label: n.title, media: previewNote(n), cls: 'dock-note-preview-card' })).join('');
   }
   if (tab === 'home') {
     const items = [
-      radialButton({ action: 'tab:web', label: 'Web Projects', media: '<div class="dock-category-preview web">🌐</div>', cls: 'dock-category-card', dx: -122, dy: -112 }),
-      radialButton({ action: 'tab:python', label: 'Python', media: '<div class="dock-category-preview python">🐍</div>', cls: 'dock-category-card', dx: 0, dy: -158 }),
+      radialButton({ action: 'tab:web', label: 'Web Projects', media: '<div class="dock-category-preview web">🌐</div>', cls: 'dock-category-card' }),
+      radialButton({ action: 'tab:python', label: 'Python', media: '<div class="dock-category-preview python">🐍</div>', cls: 'dock-category-card' })
     ];
-    if (session.user && Notes.pendingCount()) items.push(radialButton({ action: 'tab:notations', label: 'Anotações e tarefas pendentes', media: '<div class="dock-category-preview notes">🗒</div>', cls: 'dock-category-card', dx: 122, dy: -112 }));
+    if (session.user && Notes.pendingCount()) items.push(radialButton({ action: 'tab:notations', label: 'Anotações e tarefas pendentes', media: '<div class="dock-category-preview notes">🗒</div>', cls: 'dock-category-card' }));
     return items.join('');
   }
-  if (tab === 'admin') return radialButton({ action: 'tab:admin', label: 'Painel administrativo', media: '<div class="dock-category-preview admin">⚙</div>', cls: 'dock-category-card', dx: 0, dy: -148 });
+  if (tab === 'admin') return radialButton({ action: 'tab:admin', label: 'Painel administrativo', media: '<div class="dock-category-preview admin">⚙</div>', cls: 'dock-category-card' });
   return '';
 }
 
@@ -235,6 +224,7 @@ function closeDockRadial() {
   radial.classList.remove('open');
   radial.setAttribute('aria-hidden', 'true');
   radial.innerHTML = '';
+  radial.removeAttribute('data-count');
 }
 
 async function openDockRadial(anchor) {
@@ -243,13 +233,15 @@ async function openDockRadial(anchor) {
   const token = ++dockHoverToken;
   const rect = anchor.getBoundingClientRect();
   radial.style.left = `${rect.left + rect.width / 2}px`;
-  radial.style.top = `${rect.top + rect.height / 2}px`;
+  radial.style.top = `${Math.max(10, rect.top - 12)}px`;
+  radial.dataset.anchor = anchor.dataset.tab;
   radial.innerHTML = '<div class="dock-radial-loading">Abrindo…</div>';
   radial.classList.add('open');
   radial.setAttribute('aria-hidden', 'false');
   const html = await dockRadialItems(anchor.dataset.tab);
   if (token !== dockHoverToken) return;
   radial.innerHTML = html;
+  radial.dataset.count = String(radial.querySelectorAll('[data-radial-action]').length || 1);
 }
 
 function bindDockHover() {

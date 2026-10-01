@@ -22,8 +22,8 @@
     "order": 5
   },
   "aim-arena-3d.html": {
-    "title": "Aim Arena 3D — Corredores",
-    "description": "Labirinto 3D com câmera livre, inimigos e um Summon Enemy que exige cinco disparos para ser destruído.",
+    "title": "Puzzle Suffers 3D — Corredores",
+    "description": "Labirinto 3D com WASD, colisão nas paredes e inimigos, câmera livre e Summon Enemy.",
     "icon": "🎯",
     "tags": [
       "jogo",
@@ -33,14 +33,14 @@
     ],
     "order": 20
   },
-  "rakino-space.html": {
-    "title": "Rakino Space 3D",
-    "description": "Voo 3D em velocidade constante, com direção livre, asteroides destrutíveis e pontuação.",
-    "icon": "☄️",
+  "rakino-race-3d.html": {
+    "title": "Rakino Race 3D",
+    "description": "Corrida 3D com aceleração, frenagem, ré, direção lateral e disparos que destroem carros rivais.",
+    "icon": "🏁",
     "tags": [
       "jogo",
       "3D",
-      "espaço",
+      "corrida",
       "single player"
     ],
     "order": 10
