@@ -1,10 +1,7 @@
-# Sistema
+_legado-php/
 .DS_Store
 Thumbs.db
 
-# Desenvolvimento local
-.vscode/
-*.log
-
-# Não guardar artefatos temporários
+# Python generated files
 __pycache__/
+*.py[cod]

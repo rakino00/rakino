@@ -7,9 +7,17 @@ import { $, esc, toast, icon, fmtDateBR } from './ui.js';
 import { initModal, openModal, hideModal, isModalOpen } from './modal.js';
 import * as Auth from './auth.js';
 import * as Notes from './notations.js';
+import * as Profile from './profile.js';
+import * as Chat from './chat.js';
 import { renderPython, bindPython } from './python.js';
+import { mountRunner } from './runner.js';
 
 const ADMIN_EMAIL = 'rakifernn@gmail.com';
+
+// Registros legados que não fazem mais parte do Rakino. Eles são filtrados
+// também do Firestore para que versões antigas não reapareçam no catálogo.
+const RETIRED_WEB_PROJECTS = new Set(['rakino-space','rakino-race-3d','aim-arena-3d','rakino-space-3d','rakino-race-3d-single-player']);
+const RETIRED_WEB_TITLES = new Set(['rakino race 3d','rakino space 3d','rakino race 3d — single player','aim arena 3d — corredores']);
 
 const TABS = [
   { id: 'home', label: 'Início', icon: 'home', access: 'guest' },
@@ -47,179 +55,64 @@ function coverSVG(item) {
 }
 function escSvg(v) { return String(v).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 
-const GITHUB = {
-  owner: 'rakino00',
-  repo: 'rakino',
-  branch: 'main',
-  root: 'web-projects',
-};
-
-function githubApi(path) {
-  return `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${path}?ref=${encodeURIComponent(GITHUB.branch)}&t=${Date.now()}`;
-}
-
-async function githubJSON(path) {
-  const res = await fetch(githubApi(path), {
-    cache: 'no-store',
-    headers: { Accept: 'application/vnd.github+json' },
-  });
-  if (!res.ok) throw new Error(`GitHub ${res.status}: ${path}`);
-  return res.json();
-}
-
-async function githubText(file) {
-  const url = file.download_url || `https://raw.githubusercontent.com/${GITHUB.owner}/${GITHUB.repo}/${GITHUB.branch}/${file.path}`;
-  const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`README ${res.status}: ${file.path}`);
-  return res.text();
-}
-
-function scalar(v) {
-  const value = String(v ?? '').trim();
-  if (!value) return '';
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) return value.slice(1,-1);
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return value;
-}
-
-function parseListValue(v) {
-  const value = String(v ?? '').trim();
-  if (!value) return [];
-  if (value.startsWith('[') && value.endsWith(']')) {
-    try { return JSON.parse(value.replace(/'/g, '"')); } catch { return value.slice(1,-1).split(',').map(x=>x.trim()).filter(Boolean); }
-  }
-  return [scalar(value)];
-}
-
-function parseProjectMD(text) {
-  const out = {};
-  const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/);
-  let body = String(text || '');
-  if (lines[0]?.trim() === '---') {
-    const end = lines.findIndex((line, i) => i > 0 && line.trim() === '---');
-    if (end > 0) {
-      body = lines.slice(end + 1).join('\n').trim();
-      let activeList = null;
-      for (const line of lines.slice(1, end)) {
-        if (!line.trim() || line.trim().startsWith('#')) continue;
-        const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-        if (m) {
-          const key = m[1];
-          const raw = m[2].trim();
-          if (raw === '') { out[key] = []; activeList = key; continue; }
-          out[key] = ['tags','creators','technologies','features'].includes(key) ? parseListValue(raw) : scalar(raw);
-          activeList = null;
-          continue;
-        }
-        const item = line.match(/^\s+-\s+(.*)$/);
-        if (item && activeList) out[activeList].push(scalar(item[1]));
-      }
-    }
-  }
-  out.body = body;
-  out.creators = Array.isArray(out.creators) ? out.creators : (out.creators ? [out.creators] : []);
-  for (const key of ['tags','technologies','features']) out[key] = Array.isArray(out[key]) ? out[key] : (out[key] ? [out[key]] : []);
-  return out;
-}
-
-function extOf(path='') {
-  const m = String(path).match(/\.([^.\/]+)$/);
-  return m ? m[1].toLowerCase() : '';
-}
-
-function resolveRepoURL(path='') {
-  return `https://${GITHUB.owner}.github.io/${GITHUB.repo}/${path.replace(/^\//,'')}`;
-}
-
-function resolveCover(meta, dirEntries, projectPath) {
-  const wanted = meta.cover || meta.thumbnail;
-  if (wanted) {
-    if (/^https?:\/\//i.test(wanted) || wanted.startsWith('data:')) return wanted;
-    const clean = String(wanted).replace(/^\.\//,'');
-    return resolveRepoURL(`${projectPath}/${clean}`);
-  }
-  const image = dirEntries.find(f => f.type === 'file' && /\.(png|jpe?g|webp|gif|svg)$/i.test(f.name));
-  return image ? resolveRepoURL(image.path) : '';
-}
-
-async function discoverWebProjects() {
-  const dirs = await githubJSON(GITHUB.root);
-  const projectDirs = (Array.isArray(dirs) ? dirs : []).filter(x => x.type === 'dir');
-  const found = [];
-
-  for (const dir of projectDirs) {
-    try {
-      const entries = await githubJSON(dir.path);
-      const md = entries.find(x => x.type === 'file' && x.name.toLowerCase() === 'project.md');
-      if (!md) continue;
-      const raw = await githubText(md);
-      const meta = parseProjectMD(raw);
-      const entry = String(meta.entry || 'index.html').replace(/^\.\//,'');
-      const entryFile = entries.find(x => x.type === 'file' && x.name === entry) || entries.find(x => x.type === 'file' && x.name.toLowerCase() === 'index.html');
-      if (!entryFile) continue;
-      const project = {
-        id: dir.name,
-        path: dir.path,
-        title: meta.title || dir.name,
-        description: meta.description || meta.body?.split(/\n\s*\n/)[0] || 'Protótipo web.',
-        creators: meta.creators,
-        icon: meta.icon || '🌐',
-        type: meta.type || extOf(entryFile.name) || 'web',
-        tags: meta.tags,
-        technologies: meta.technologies,
-        features: meta.features,
-        status: meta.status || 'prototype',
-        version: meta.version || '',
-        updated: meta.updated || '',
-        entry,
-        file: resolveRepoURL(`${dir.path}/${entry}`),
-        cover: resolveCover(meta, entries, dir.path),
-        files: entries.filter(x => x.type === 'file').map(x => x.name),
-        repoPath: `https://github.com/${GITHUB.owner}/${GITHUB.repo}/tree/${GITHUB.branch}/${dir.path}`,
-      };
-      found.push(project);
-    } catch (err) {
-      console.warn('[Rakino] Projeto ignorado:', dir.path, err);
-    }
-  }
-  return found.sort((a,b) => a.title.localeCompare(b.title, 'pt-BR'));
-}
-
-async function getData(kind, force=false) {
+async function getData(kind) {
+  if (cache[kind]) return cache[kind];
   if (kind !== 'web') return [];
-  if (!force && cache[kind]) return cache[kind];
-  try {
-    cache[kind] = await discoverWebProjects();
-  } catch (err) {
-    console.error('[Rakino] Não foi possível descobrir Web Projects:', err);
-    cache[kind] = [];
-    toast('Não consegui ler a pasta web-projects do GitHub.', 5000);
-  }
-  return cache[kind];
-}
 
-function refreshWebProjects() {
-  delete cache.web;
-  rendered.delete('web');
-  renderTab('web');
-  if (activeTab === 'home') renderHome();
+  // A lista do repositório é a base. O Firestore pode acrescentar/alterar projetos,
+  // mas nunca deve esconder projetos que já estão publicados no GitHub.
+  let localList = [];
+  try {
+    const res = await fetch(`data/${DATA_FILE[kind]}.json?v=201`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status);
+    localList = await res.json();
+  } catch (err) {
+    console.warn('[Rakino] falha ao ler JSON local', kind, err);
+  }
+
+  try {
+    const { db, fs } = Auth.ctx();
+    if (db && fs) {
+      const snap = await fs.getDocs(fs.collection(db, 'webProjects'));
+      const isRetired = p => {
+        const id = String(p.id || '').toLowerCase();
+        const title = String(p.title || '').trim().toLowerCase();
+        const file = String(p.file || '').toLowerCase();
+        return RETIRED_WEB_PROJECTS.has(id)
+          || RETIRED_WEB_TITLES.has(title)
+          || /rakino[-_ ]space(?:[-_ ]3d)?|rakino[-_ ]race[-_ ]3d|aim[-_ ]arena[-_ ]3d/.test(id + ' ' + file + ' ' + title);
+      };
+      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !isRetired(p));
+      const merged = new Map(cloudList.map(p => [p.id, p]));
+      // O catálogo local tem precedência e também elimina duplicatas antigas por arquivo.
+      localList.forEach(p => merged.set(p.id, { ...(merged.get(p.id) || {}), ...p }));
+      const unique = new Map();
+      [...merged.values()].filter(p => !isRetired(p)).forEach(p => {
+        const key = String(p.file || p.title || p.id).trim().toLowerCase();
+        if (!unique.has(key) || p.id === 'puzzle-suffers' || p.id === 'rakino-race' || p.id === 'takamae-vesikika') unique.set(key, p);
+      });
+      cache[kind] = [...unique.values()].sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
+      return cache[kind];
+    }
+  } catch (err) {
+    console.warn('[Rakino] Firestore webProjects indisponível:', err);
+  }
+
+  cache[kind] = localList.sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
+  if (!cache[kind].length) toast('Não consegui carregar os Web Projects.', 4000);
+  return cache[kind];
 }
 
 function card(item, kind) {
   const cover = item.cover || coverSVG(item);
   const tags = kind === 'web'
-    ? [`<span class="tag ok">.${esc(item.type || 'web')}</span>`, ...(item.tags || []).slice(0,5).map(t => `<span class="tag">${esc(t)}</span>`)]
+    ? [`<span class="tag ok">.${esc(item.type || 'html')}</span>`, ...(item.tags || []).map(t => `<span class="tag">${esc(t)}</span>`)]
     : [];
-  const creators = (item.creators || []).join(', ');
   return `<article class="card" role="button" tabindex="0" data-open data-kind="${kind}" data-id="${esc(item.id)}">
-    <div class="card-cover-wrap"><img class="card-image" src="${esc(cover)}" alt="Capa de ${esc(item.title)}" loading="lazy" onerror="this.style.display='none';this.parentElement.classList.add('fallback')"><span class="cover-icon">${esc(item.icon || '🌐')}</span></div>
+    <img class="card-image" src="${esc(cover)}" alt="Capa automática de ${esc(item.title)}" loading="lazy">
     <div class="card-body"><h3 class="card-title">${esc(item.title)}</h3>
-    <p class="card-desc">${esc(item.description || '')}</p>
-    ${creators ? `<p class="card-meta">${esc(creators)}</p>` : ''}
-    <div class="card-tags">${tags.join('')}</div></div></article>`;
+    <p class="card-desc">${esc(item.description || '')}</p>${item.creator||item.creators?.length?`<p class="card-desc"><small>Por: ${esc([...(item.creator?[item.creator]:[]),...(item.creators||[])].join(', '))}</small></p>`:''}<div class="card-tags">${tags.join('')}</div></div></article>`;
 }
-
 const cards = (list, kind) => list.map(i => card(i, kind)).join('');
 const gridOrEmpty = (list, kind, empty) => list.length ? `<div class="grid">${cards(list, kind)}</div>` : `<p class="empty-state">${empty}</p>`;
 const rowOrEmpty = (list, kind) => list.length ? `<div class="row-scroll">${cards(list.slice(0,8), kind)}</div>` : '<p class="empty-state">Nada por aqui ainda.</p>';
@@ -231,7 +124,10 @@ function buildPanels() {
     s.id = 'tab-' + t.id; s.className = 'tab-panel'; main.appendChild(s); panels[t.id] = s;
   });
   Notes.bind(panels.notations); Notes.mount(panels.notations);
-  Notes.onChange(() => { const h = $('#homeNotes'); if (h) h.innerHTML = Notes.pendingHTML(5); });
+  Notes.onChange(() => {
+    const h = $('#homeNotes'); if (h) h.innerHTML = Notes.pendingHTML(5);
+    renderDock(); if (!$('#dockRadial')?.matches(':hover')) closeDockRadial();
+  });
 }
 
 async function renderTab(id) {
@@ -246,33 +142,26 @@ async function renderTab(id) {
   if (rendered.has(id)) return;
   rendered.add(id);
   const list = await getData(id);
-  el.innerHTML = `<div class="section-head"><div><h2 class="section-title"><span class="accent">🌐</span> Web Projects</h2><p class="lead">Cada pasta com <code>project.md</code> aparece automaticamente.</p></div><button class="btn" data-refresh-web>↻ Atualizar</button></div>${gridOrEmpty(list, id, 'Nenhum projeto com project.md válido.')}`;
+  el.innerHTML = `<h2 class="section-title"><span class="accent">🌐</span> Web Projects</h2>
+    <p class="lead">Páginas e apps simples rodando direto no navegador.</p>
+    ${gridOrEmpty(list, id, 'Nenhum projeto cadastrado.')}`;
 }
 
 async function renderHome() {
-  const web = await getData('web');
-  const u = session.user, first = u ? (u.displayName || '').split(' ')[0] : '';
-  panels.home.innerHTML = `<div class="hero"><h1>${u ? `Olá${first ? ', ' + esc(first) : ''} 👋` : 'Bem-vindo ao Rakino ✦'}</h1>
-    <p>${u ? 'Seu painel pessoal de projetos e notations.' : 'Projetos, Python e suas notations.'}</p></div>
-    ${u ? `<h2 class="section-title"><span class="accent">🗒</span> Tarefas pendentes</h2><div class="notation-list" id="homeNotes">${Notes.pendingHTML(5)}</div>` : ''}
-    <h2 class="section-title"><span class="accent">🌐</span> Web Projects</h2>${rowOrEmpty(web,'web')}`;
+  const u = session.user;
+  const name = u ? (u.displayName || u.email || 'Usuário Rakino') : 'estranho';
+  panels.home.innerHTML = `<div class="hero home-identity"><h1>${esc(name)}</h1></div>
+    ${u ? `<h2 class="section-title"><span class="accent">🗒</span> Anotações e tarefas pendentes</h2><div class="notation-list" id="homeNotes">${Notes.pendingHTML(5)}</div>` : ''}
+    <section class="runner-wrap" id="homeRunner"></section>`;
+  mountRunner($('#homeRunner'));
 }
 
 const bar = (title, extra='') => `<div class="modal-bar"><div class="modal-title">${esc(title)}</div>${extra}<button class="icon-btn" data-close aria-label="Fechar">${icon('close')}</button></div>`;
 
 function webModal(p) {
-  const expand = `<a class="icon-btn" href="${esc(p.file)}" target="_blank" rel="noopener" title="Abrir projeto" aria-label="Abrir">${icon('expand')}</a>`;
-  const repo = `<a class="icon-btn" href="${esc(p.repoPath)}" target="_blank" rel="noopener" title="Ver no GitHub" aria-label="GitHub">${icon('github')}</a>`;
-  const tags = (p.tags || []).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
-  const tech = (p.technologies || []).map(t=>`<span class="tag ok">${esc(t)}</span>`).join('');
-  const creators = (p.creators || []).join(', ');
-  const files = (p.files || []).join(', ');
-  return `<div class="modal-box tall"><div class="modal-bar"><div class="modal-title">${esc(p.icon || '🌐')} ${esc(p.title)}</div>${repo}${expand}<button class="icon-btn" data-close aria-label="Fechar">${icon('close')}</button></div>
-    <div class="modal-body web-project-modal">
-      <div class="project-meta-head"><div><strong>${esc(p.description)}</strong><div class="card-meta">${creators ? 'Criador(es): '+esc(creators) : ''}${p.status ? ' · '+esc(p.status) : ''}${p.version ? ' · '+esc(p.version) : ''}</div></div><div class="card-tags">${tags}${tech}</div></div>
-      <div class="frame-wrap"><div class="frame-loading">Carregando…</div><iframe class="frame" src="${esc(p.file)}" title="${esc(p.title)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe></div>
-      <details class="project-details"><summary>Metadados e arquivos</summary><p><b>Tipo:</b> ${esc(p.type)} · <b>Entrada:</b> ${esc(p.entry)}</p><p><b>Arquivos:</b> ${esc(files || '—')}</p></details>
-    </div></div>`;
+  const expand = `<a class="icon-btn" href="${esc(p.file)}" title="Abrir projeto" aria-label="Abrir">${icon('expand')}</a>`;
+  return `<div class="modal-box tall">${bar(p.title, expand)}<div class="modal-body frame-wrap"><div class="frame-loading">Carregando…</div>
+    <iframe class="frame" src="${esc((p.file || '') + ((p.file || '').includes('?') ? '&' : '?') + 'embed=1')}" title="${esc(p.title)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe></div></div>`;
 }
 
 async function showItem(kind,id,push) {
@@ -294,6 +183,100 @@ function renderDock() {
     const locked = t.access === 'user' && !session.user;
     return `<button class="dock-item${locked?' locked':''}${t.id===activeTab?' active':''}" data-tab="${t.id}" data-label="${esc(t.label)}" aria-label="${esc(t.label)}${locked?' (requer login)':''}">${icon(t.icon)}<span class="tip">${esc(t.label)}</span></button>`;
   }).join('');
+  bindDockHover();
+}
+
+let dockHoverTimer = 0;
+let dockHoverToken = 0;
+
+function initials(title='') {
+  const words = String(title).replace(/[^\p{L}\p{N}\s-]/gu,' ').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return 'R';
+  return (words.length === 1 ? words[0].slice(0,2) : words.slice(0,2).map(w=>w[0]).join('')).toUpperCase();
+}
+function previewWeb(p) {
+  const gif = 'assets/img/dock-pulse.gif';
+  return `<div class="dock-project-orb"><span>${esc(initials(p.title))}</span><img src="${gif}" alt="" aria-hidden="true"></div>`;
+}
+function previewNote(n) {
+  return `<div class="dock-project-orb note"><span>${esc(initials(n.title || 'Nota'))}</span><img src="assets/img/dock-pulse.gif" alt="" aria-hidden="true"></div>`;
+}
+function previewPython() {
+  return `<div class="dock-project-orb python"><span>PY</span><img src="assets/img/dock-pulse.gif" alt="" aria-hidden="true"></div>`;
+}
+function radialButton({action,label,media,cls=''}) {
+  return `<button class="dock-radial-item ${cls}" data-radial-action="${esc(action)}" title="${esc(label)}" aria-label="${esc(label)}">${media}<span class="dock-radial-label">${esc(label)}</span></button>`;
+}
+async function dockRadialItems(tab) {
+  if (tab === 'web') {
+    const list = await getData('web');
+    return list.map(p => radialButton({action:`web:${p.id}`,label:p.title,media:previewWeb(p),cls:'dock-web-preview'})).join('');
+  }
+  if (tab === 'python') return radialButton({action:'tab:python',label:'Python',media:previewPython(),cls:'dock-python-preview'});
+  if (tab === 'notations') {
+    if (!session.user) return radialButton({action:'login:notations',label:'Entrar para ver anotações',media:'<div class="dock-project-orb locked"><span>🔒</span><img src="assets/img/dock-pulse.gif" alt=""></div>',cls:'dock-note-preview-card'});
+    const list = Notes.getPending ? Notes.getPending() : [];
+    if (!list.length) return radialButton({action:'tab:notations',label:'Nenhuma anotação em aberto',media:'<div class="dock-project-orb empty"><span>✓</span><img src="assets/img/dock-pulse.gif" alt=""></div>',cls:'dock-note-preview-card'});
+    return list.map(n => radialButton({action:`note:${n.id}`,label:n.title || 'Anotação',media:previewNote(n),cls:'dock-note-preview-card'})).join('');
+  }
+  if (tab === 'home') return [
+    radialButton({action:'tab:python',label:'Python',media:previewPython(),cls:'dock-category-card'}),
+    ...(session.user && (Notes.getPending ? Notes.getPending().length : Notes.pendingCount()) ? [radialButton({action:'tab:notations',label:'Anotações e tarefas pendentes',media:previewNote({title:'Notas'}),cls:'dock-category-card'})] : [])
+  ].join('');
+  if (tab === 'admin') return radialButton({action:'tab:admin',label:'Painel administrativo',media:'<div class="dock-project-orb"><span>⚙</span><img src="assets/img/dock-pulse.gif" alt=""></div>',cls:'dock-category-card'});
+  return '';
+}
+function closeDockRadial() {
+  const radial = $('#dockRadial'); if (!radial) return;
+  radial.classList.remove('open'); radial.setAttribute('aria-hidden','true'); radial.innerHTML='';
+}
+async function openDockRadial(anchor) {
+  const radial=$('#dockRadial'); if(!radial)return;
+  clearTimeout(dockHoverTimer); const token=++dockHoverToken;
+  radial.innerHTML='<div class="dock-radial-loading">Abrindo…</div>';
+  radial.classList.add('open'); radial.setAttribute('aria-hidden','false');
+  const html=await dockRadialItems(anchor.dataset.tab); if(token!==dockHoverToken)return;
+  radial.innerHTML=html || '<div class="dock-radial-loading">Nada disponível.</div>';
+  const rect=anchor.getBoundingClientRect();
+  const center=Math.max(12,Math.min(innerWidth-12,rect.left+rect.width/2));
+  radial.style.left=`${center}px`;
+}
+function bindDockHover(){
+  const dock=$('#dock'); if(!dock)return;
+  dock.querySelectorAll('.dock-item').forEach(btn=>{
+    btn.addEventListener('mouseenter',()=>{clearTimeout(dockHoverTimer);dockHoverTimer=setTimeout(()=>openDockRadial(btn),90)});
+    btn.addEventListener('mouseleave',()=>{dockHoverTimer=setTimeout(()=>{if(!$('#dockRadial')?.matches(':hover'))closeDockRadial()},180)});
+  });
+  const radial=$('#dockRadial');
+  radial.onmouseenter=()=>clearTimeout(dockHoverTimer);
+  radial.onmouseleave=()=>{dockHoverTimer=setTimeout(closeDockRadial,160)};
+}
+
+function bindRadial() {
+  const radial = $('#dockRadial');
+  radial.addEventListener('mouseenter', () => clearTimeout(dockHoverTimer));
+  radial.addEventListener('mouseleave', () => {
+    dockHoverTimer = setTimeout(closeDockRadial, 180);
+  });
+  radial.addEventListener('click', e => {
+    const b = e.target.closest('[data-radial-action]');
+    if (!b) return;
+    const action = b.dataset.radialAction || '';
+    closeDockRadial();
+    if (action.startsWith('web:')) return showItem('web', action.slice(4), true);
+    if (action.startsWith('note:')) {
+      if (!session.user) return goLogin();
+      location.hash = '#/notations';
+      return setTimeout(() => Notes.openEditor(action.slice(5)), 0);
+    }
+    if (action.startsWith('login:')) return askLogin(tabDef(action.slice(6)) || tabDef('notations'));
+    if (action.startsWith('tab:')) {
+      const tab = action.slice(4), def = tabDef(tab);
+      if (def?.access === 'user' && !session.user) return askLogin(def);
+      if (def?.access === 'admin' && !isAdmin()) return;
+      location.hash = `#/${tab}`;
+    }
+  });
 }
 
 function activate(tab) {
@@ -319,21 +302,57 @@ function route() {
 function renderChip() {
   const u=session.user;
   $('#userChip').innerHTML=u
-    ? `${u.photoURL?`<img src="${esc(u.photoURL)}" alt="" referrerpolicy="no-referrer">`:`<span class="avatar">${esc((u.displayName||u.email||'?')[0].toUpperCase())}</span>`}
-       <span class="user-name">${esc(u.displayName||u.email||'')}</span>${isAdmin()?'<span class="badge">ADMIN</span>':''}<button class="chip-btn" data-logout>Sair</button>`
+    ? `<button class="profile-chip" data-profile title="Abrir perfil">${u.photoURL?`<img src="${esc(u.photoURL)}" alt="" referrerpolicy="no-referrer">`:`<span class="avatar">${esc((u.displayName||u.email||'?')[0].toUpperCase())}</span>`}
+       <span class="user-name">${esc(u.displayName||u.email||'')}</span>${isAdmin()?'<span class="badge">ADMIN</span>':''}</button><button class="chip-btn" data-logout>Sair</button>`
     : `<span class="badge">Visitante</span><button class="chip-btn" data-login>Entrar</button>`;
 }
 
 async function renderAdmin(el) {
   if (!isAdmin()) { el.innerHTML='<p class="empty-state">Acesso restrito ao administrador.</p>'; return; }
-  const list=await getData('web', true);
-  el.innerHTML=`<div class="hero"><h1>⚙️ Administrador</h1><p>Os Web Projects agora são descobertos diretamente da pasta <code>web-projects/</code> no GitHub.</p></div>
-    <div class="admin-bar"><button class="btn btn-primary" data-admin-refresh>↻ Atualizar descoberta</button><span class="admin-status">${list.length} projeto(s) encontrado(s)</span></div>
-    <div class="notice">Para adicionar, remover ou reorganizar um protótipo, altere a pasta pelo GitHub Desktop. Cada projeto precisa de um <code>project.md</code> e de um arquivo de entrada, normalmente <code>index.html</code>.</div>
-    <div class="admin-list">${list.map(p=>`<div class="admin-row"><div><strong>${esc(p.icon)} ${esc(p.title)}</strong><small>${esc(p.path)}/project.md · ${esc(p.entry)}</small></div><div><a class="btn" href="${esc(p.repoPath)}" target="_blank" rel="noopener">GitHub</a></div></div>`).join('') || '<p class="empty-state">Nenhum projeto com project.md válido.</p>'}</div>`;
-  el.onclick=e=>{ if(e.target.closest('[data-admin-refresh]')) refreshWebProjects(); };
+  const list=await getData('web');
+  el.innerHTML=`<div class="hero"><h1>⚙️ Administrador</h1><p>Gerencie os Web Projects salvos no Firebase.</p></div>
+    <div class="admin-bar"><button class="btn btn-primary" data-admin-add>+ Novo Web Project</button>
+    <button class="btn" data-admin-import>Importar JSON atual</button><span class="admin-status">${esc(session.user.email)}</span></div>
+    <div class="admin-list">${list.map(p=>`<div class="admin-row"><div><strong>${esc(p.title)}</strong><small>${esc(p.file||'')}</small></div>
+      <div><button class="btn" data-admin-edit="${esc(p.id)}">Editar</button><button class="btn danger" data-admin-del="${esc(p.id)}">Excluir</button></div></div>`).join('') || '<p class="empty-state">Nenhum projeto.</p>'}</div>`;
+  el.onclick=async e=>{
+    const add=e.target.closest('[data-admin-add]'), imp=e.target.closest('[data-admin-import]'), edit=e.target.closest('[data-admin-edit]'), del=e.target.closest('[data-admin-del]');
+    if(add) return openAdminEditor();
+    if(imp) return importCurrentJSON();
+    if(edit) return openAdminEditor(list.find(x=>x.id===edit.dataset.adminEdit));
+    if(del) { if(!confirm('Excluir este Web Project?')) return; await adminDelete(del.dataset.adminDel); }
+  };
 }
-
+function webCollection() { const {db,fs}=Auth.ctx(); return fs.collection(db,'webProjects'); }
+async function adminSet(id,data) {
+  const {fs}=Auth.ctx(); const ref=fs.doc(webCollection(),id);
+  await fs.setDoc(ref,{...data,updatedAt:fs.serverTimestamp()},{merge:true}); delete cache.web; rendered.delete('web'); rendered.delete('admin'); await renderAdmin(panels.admin); toast('Projeto salvo.');
+}
+async function adminDelete(id) { const {fs}=Auth.ctx(); await fs.deleteDoc(fs.doc(webCollection(),id)); delete cache.web; rendered.delete('web'); await renderAdmin(panels.admin); toast('Projeto excluído.'); }
+async function importCurrentJSON() {
+  const list=await getData('web'); if(!list.length) return toast('Não há JSON para importar.');
+  for(const p of list) { const {id,...data}=p; await adminSet(id,data); }
+  toast('JSON importado para o Firebase.');
+}
+function openAdminEditor(p=null) {
+  const id=p?.id||'';
+  const root=openModal(`<div class="modal-box"><div class="modal-body"><form id="adminForm" class="sheet-form">
+    <h3>${p?'Editar':'Novo'} Web Project</h3>
+    <label>ID<input name="id" required value="${esc(id)}" ${p?'readonly':''}></label>
+    <label>Título<input name="title" required maxlength="100" value="${esc(p?.title||'')}"></label>
+    <label>Arquivo HTML<input name="file" required value="${esc(p?.file||'web-projects/')}"></label>
+    <label>Descrição<textarea name="description" rows="3">${esc(p?.description||'')}</textarea></label>
+    <label>Ícone/emoji<input name="icon" value="${esc(p?.icon||'🌐')}"></label>
+    <label>Tags<input name="tags" value="${esc((p?.tags||[]).join(', '))}"></label>
+    <label>Ordem<input type="number" name="order" value="${Number(p?.order||999)}"></label>
+    <div class="form-actions"><button class="btn btn-primary">Salvar</button></div></form></div></div>`,{cls:'sheet'});
+  root.querySelector('form').onsubmit=async e=>{
+    e.preventDefault(); const fd=new FormData(e.target); const key=String(fd.get('id')).trim().replace(/[^a-zA-Z0-9_-]/g,'-');
+    if(!key) return;
+    await adminSet(key,{title:String(fd.get('title')).trim(),file:String(fd.get('file')).trim(),description:String(fd.get('description')).trim(),icon:String(fd.get('icon')).trim()||'🌐',tags:String(fd.get('tags')).split(',').map(s=>s.trim()).filter(Boolean),type:'html',order:Number(fd.get('order'))||999});
+    hideModal();
+  };
+}
 function showLogin() {
   hideModal(); $('#app').hidden=true; $('#login').hidden=false;
   const g=$('#btnGoogle'), note=$('#loginNote'); g.disabled=!Auth.isReady(); note.hidden=Auth.isReady();
@@ -348,18 +367,31 @@ function goLogin() { session.guest=false; sessionStorage.removeItem('rakino_gues
 function hideBoot(){const b=$('#boot');if(!b)return;b.classList.add('done');setTimeout(()=>b.remove(),400);}
 
 function bindTheme() {
-  const key='rakino_theme', saved=localStorage.getItem(key);
-  const setTheme=t=>{document.documentElement.dataset.theme=t;localStorage.setItem(key,t);$('#themeToggle').textContent=t==='light'?'☀️':'🌙';$('#themeToggle').title=t==='light'?'Tema escuro':'Tema claro';};
-  setTheme(saved||'dark');
-  $('#themeToggle').onclick=()=>setTheme(document.documentElement.dataset.theme==='light'?'dark':'light');
+  const setMode = (mode) => {
+    const value = mode === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = value;
+    localStorage.setItem('rakino_color_mode', value);
+    const btn = $('#themeToggle');
+    if (btn) {
+      btn.textContent = value === 'light' ? '☀️' : '🌙';
+      btn.title = value === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro';
+    }
+  };
+  setMode(localStorage.getItem('rakino_color_mode') || 'dark');
+  $('#themeToggle').onclick = async () => {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    setMode(next);
+    if (session.user && Profile.saveColorMode) await Profile.saveColorMode(session.user, next);
+  };
 }
 
 function bindGlobal() {
+  bindRadial();
   $('#dock').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;const def=tabDef(b.dataset.tab);if(def.access==='user'&&!session.user)return askLogin(def);if(def.access==='admin'&&!isAdmin())return;location.hash='#/'+def.id;});
-  $('#main').addEventListener('click',e=>{const refresh=e.target.closest('[data-refresh-web]');if(refresh){refreshWebProjects();return;}const c=e.target.closest('[data-open]');if(c)showItem(c.dataset.kind,c.dataset.id,true);});
+  $('#main').addEventListener('click',e=>{const c=e.target.closest('[data-open]');if(c)showItem(c.dataset.kind,c.dataset.id,true);});
   $('#main').addEventListener('keydown',e=>{const c=e.target.closest('[data-open]');if(c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();showItem(c.dataset.kind,c.dataset.id,true);}});
   $('#fab').addEventListener('click',()=>Notes.openEditor());
-  $('#userChip').addEventListener('click',async e=>{if(e.target.closest('[data-logout]')){try{await Auth.logout();}catch{toast('Erro ao sair.')}sessionStorage.removeItem('rakino_guest');session.guest=false;}if(e.target.closest('[data-login]'))goLogin();});
+  $('#userChip').addEventListener('click',async e=>{if(e.target.closest('[data-profile]')) return Profile.openProfile(session.user);if(e.target.closest('[data-logout]')){try{await Auth.logout();}catch{toast('Erro ao sair.')}sessionStorage.removeItem('rakino_guest');session.guest=false;}if(e.target.closest('[data-login]'))goLogin();});
   $('#btnGoogle').addEventListener('click',async()=>{try{await Auth.loginGoogle();}catch(err){console.error(err);toast('Não foi possível entrar: '+(err.code||err.message),4500);}});
   $('#btnGuest').addEventListener('click',()=>{session.guest=true;sessionStorage.setItem('rakino_guest','1');decide();});
   window.addEventListener('hashchange',route);
@@ -369,7 +401,7 @@ async function boot(){
   initModal(); buildPanels(); bindGlobal(); bindTheme();
   if('serviceWorker' in navigator&&location.protocol!=='file:') navigator.serviceWorker.register('sw.js').catch(()=>{});
   await Auth.init();
-  Auth.onUser(u=>{const changed=(u?.uid||null)!==(session.user?.uid||null);session.user=u||null;if(u){if(changed)Notes.start(u);}else Notes.stop();if(changed||!session.ready)decide();});
+  Auth.onUser(async u=>{const changed=(u?.uid||null)!==(session.user?.uid||null);session.user=u||null;if(u){if(changed)Notes.start(u);await Profile.loadForUser(u);Chat.start(u);}else {Notes.stop();Chat.stop();Profile.applySavedTheme();}if(changed||!session.ready){renderChip();renderDock();decide();}});
   setTimeout(()=>{if(!session.ready)decide();},5000);
 }
 boot();
