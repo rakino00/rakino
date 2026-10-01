@@ -41,9 +41,20 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          for path in [Path('data/web-projects.json'), Path('web-projects/_meta.json'), Path('manifest.webmanifest')]:
+
+          for path in [Path('data/web-projects.json'), Path('manifest.webmanifest')]:
               json.loads(path.read_text(encoding='utf-8'))
               print('OK:', path)
+
+          catalog = json.loads(Path('data/web-projects.json').read_text(encoding='utf-8'))
+          if not isinstance(catalog, list):
+              raise SystemExit('ERRO: data/web-projects.json deve conter uma lista')
+
+          for item in catalog:
+              if not isinstance(item, dict) or not item.get('id') or not item.get('file'):
+                  raise SystemExit('ERRO: item do catálogo sem id/file')
+
+          print(f'OK: catálogo com {len(catalog)} projeto(s)')
           PY
 
       - name: Montar artefato
