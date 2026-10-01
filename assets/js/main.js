@@ -58,7 +58,7 @@ async function getData(kind) {
   // mas nunca deve esconder projetos que já estão publicados no GitHub.
   let localList = [];
   try {
-    const res = await fetch(`data/${DATA_FILE[kind]}.json?v=20260930`, { cache: 'no-store' });
+    const res = await fetch(`data/${DATA_FILE[kind]}.json?v=20261001b`, { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
     localList = await res.json();
   } catch (err) {
@@ -71,7 +71,7 @@ async function getData(kind) {
       const snap = await fs.getDocs(fs.collection(db, 'webProjects'));
       const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
         // Legacy alias: o antigo projeto Race/Space não deve reaparecer do Firestore
-        // depois da migração para Rakino Race 3D.
+        // Registros antigos de Space são ignorados após a renomeação para Takamae Vesikika.
         .filter(p => p.id !== 'rakino-space' && p.file !== 'web-projects/rakino-space.html');
       const merged = new Map(cloudList.map(p => [p.id, p]));
       // O catálogo versionado do repositório é a fonte de verdade para os projetos publicados.

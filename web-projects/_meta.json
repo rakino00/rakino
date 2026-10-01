@@ -22,27 +22,37 @@
     "order": 5
   },
   "aim-arena-3d.html": {
-    "title": "Puzzle Suffers 3D — Corredores",
-    "description": "Labirinto 3D com WASD, colisão nas paredes e inimigos, câmera livre e Summon Enemy.",
+    "title": "puzzle suffers",
+    "description": "Labirinto 3D com WASD, colisão sólida nas paredes e inimigos, câmera orbital protegida e Summon Enemy.",
     "icon": "🎯",
     "tags": [
       "jogo",
-      "3D",
       "labirinto",
       "mira"
     ],
     "order": 20
   },
   "rakino-race-3d.html": {
-    "title": "Rakino Race 3D",
-    "description": "Corrida 3D com aceleração, frenagem, ré, direção lateral e disparos que destroem carros rivais.",
+    "title": "Rakino Race",
+    "description": "Corrida com pista contínua, aceleração, frenagem, ré, direção lateral e disparos que destroem carros rivais.",
     "icon": "🏁",
     "tags": [
       "jogo",
-      "3D",
       "corrida",
       "single player"
     ],
     "order": 10
+  },
+  "takamae-vesikika.html": {
+    "title": "Takamae Vesikika",
+    "description": "Voo espacial 3D com direção livre, asteroides destrutíveis e controle contínuo de velocidade.",
+    "icon": "☄️",
+    "tags": [
+      "jogo",
+      "espaço",
+      "3D",
+      "ação"
+    ],
+    "order": 15
   }
 }
