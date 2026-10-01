@@ -14,6 +14,11 @@ import { mountRunner } from './runner.js';
 
 const ADMIN_EMAIL = 'rakifernn@gmail.com';
 
+// Registros legados que não fazem mais parte do Rakino. Eles são filtrados
+// também do Firestore para que versões antigas não reapareçam no catálogo.
+const RETIRED_WEB_PROJECTS = new Set(['rakino-space','rakino-race-3d','aim-arena-3d','rakino-space-3d','rakino-race-3d-single-player']);
+const RETIRED_WEB_TITLES = new Set(['rakino race 3d','rakino space 3d','rakino race 3d — single player','aim arena 3d — corredores']);
+
 const TABS = [
   { id: 'home', label: 'Início', icon: 'home', access: 'guest' },
   { id: 'web', label: 'Web Projects', icon: 'globe', access: 'guest' },
@@ -69,14 +74,24 @@ async function getData(kind) {
     const { db, fs } = Auth.ctx();
     if (db && fs) {
       const snap = await fs.getDocs(fs.collection(db, 'webProjects'));
-      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        // Legacy alias: o antigo projeto Race/Space não deve reaparecer do Firestore
-        // Registros antigos de Space são ignorados após a renomeação para Takamae Vesikika.
-        .filter(p => !['rakino-space','rakino-race-3d','aim-arena-3d'].includes(p.id) && !String(p.file||'').includes('rakino-space.html'));
+      const isRetired = p => {
+        const id = String(p.id || '').toLowerCase();
+        const title = String(p.title || '').trim().toLowerCase();
+        const file = String(p.file || '').toLowerCase();
+        return RETIRED_WEB_PROJECTS.has(id)
+          || RETIRED_WEB_TITLES.has(title)
+          || /rakino[-_ ]space(?:[-_ ]3d)?|rakino[-_ ]race[-_ ]3d|aim[-_ ]arena[-_ ]3d/.test(id + ' ' + file + ' ' + title);
+      };
+      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !isRetired(p));
       const merged = new Map(cloudList.map(p => [p.id, p]));
-      // O catálogo versionado do repositório é a fonte de verdade para os projetos publicados.
+      // O catálogo local tem precedência e também elimina duplicatas antigas por arquivo.
       localList.forEach(p => merged.set(p.id, { ...(merged.get(p.id) || {}), ...p }));
-      cache[kind] = [...merged.values()].sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
+      const unique = new Map();
+      [...merged.values()].filter(p => !isRetired(p)).forEach(p => {
+        const key = String(p.file || p.title || p.id).trim().toLowerCase();
+        if (!unique.has(key) || p.id === 'puzzle-suffers' || p.id === 'rakino-race' || p.id === 'takamae-vesikika') unique.set(key, p);
+      });
+      cache[kind] = [...unique.values()].sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
       return cache[kind];
     }
   } catch (err) {
@@ -133,9 +148,9 @@ async function renderTab(id) {
 }
 
 async function renderHome() {
-  const u = session.user, first = u ? (u.displayName || '').split(' ')[0] : '';
-  panels.home.innerHTML = `<div class="hero"><h1>${u ? `Olá${first ? ', ' + esc(first) : ''}` : 'Bem-vindo ao Rakino ✦'}</h1>
-    <p>${u ? 'Seu espaço para construir, testar e transformar ideias em sistemas e jogos.' : 'Sistemas, jogos e experiências feitas no Rakino.'}</p></div>
+  const u = session.user;
+  const name = u ? (u.displayName || u.email || 'Usuário Rakino') : 'estranho';
+  panels.home.innerHTML = `<div class="hero home-identity"><h1>${esc(name)}</h1></div>
     ${u ? `<h2 class="section-title"><span class="accent">🗒</span> Anotações e tarefas pendentes</h2><div class="notation-list" id="homeNotes">${Notes.pendingHTML(5)}</div>` : ''}
     <section class="runner-wrap" id="homeRunner"></section>`;
   mountRunner($('#homeRunner'));
