@@ -683,3 +683,31 @@ A Atualização 005 corrige dois problemas da versão anterior:
 ### Não apague o Firestore
 
 Não é necessário apagar a coleção `webProjects` nem importar novamente o JSON. A página agora combina as duas fontes. O painel Admin continua podendo alterar os projetos do Firestore; o arquivo JSON continua sendo a base publicada pelo GitHub.
+
+## Atualização 008 — Rakino Race Single Player
+
+O `web-projects/rakino-race.html` foi convertido para uma versão **single player**.
+
+- Não exige login Google.
+- Não usa Firebase para iniciar a corrida.
+- Não cria salas nem depende de convite.
+- A corrida começa pelo botão **Iniciar corrida**.
+- Existem pilotos controlados pelo computador.
+- A velocidade aumenta gradualmente.
+- A corrida dura até 3 minutos ou até o jogador encerrar a página.
+- A pista continua em terceira pessoa.
+- A/D ou setas trocam de faixa.
+- Espaço ou o botão `●` usa uma carga.
+- As zonas azuis representam pontos de recarga.
+
+### Publicação com GitHub Desktop
+
+1. Substitua os arquivos do repositório pelos arquivos desta atualização.
+2. Abra o GitHub Desktop.
+3. Confira a alteração em `web-projects/rakino-race.html` e `data/web-projects.json`.
+4. Faça o commit.
+5. Clique em **Push origin**.
+6. Aguarde o GitHub Pages publicar.
+7. Abra a página novamente usando `Ctrl + Shift + R` se o navegador ainda mostrar uma versão anterior.
+
+Nenhuma alteração nas regras do Firebase é necessária para jogar esta versão single player.

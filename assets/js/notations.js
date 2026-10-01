@@ -22,10 +22,6 @@ const listeners = new Set();
 
 export const onChange = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
 export const isLoaded = () => loaded;
-export const pendingCount = () => items.reduce((count, item) => count + (!item.completed ? 1 : 0), 0);
-export const allItems = () => [...items].sort(cmp);
-export const pendingItems = () => items.filter((item) => !item.completed).sort(cmp);
-export const getItem = (id) => items.find((item) => item.id === id) || null;
 
 /* ------------------------------ dados ------------------------------ */
 export function start(user) {
@@ -131,8 +127,6 @@ export function bind(el) {
     if (flt) { filter = flt.dataset.filter; paint(); }
   });
 }
-
-export function getPending() { return items.filter((n) => !n.completed).slice().sort(cmp); }
 
 export function openEditor(id = null) {
   if (!uid) return;
