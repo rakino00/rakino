@@ -1,16 +1,15 @@
 ---
-title: Círculo das Quintas
-description: Roda interativa das tonalidades com diagramas de acordes para violão.
+title: acordePlus
+description: App para treino de acordes, escalas...
 creators:
   - Rakino
 icon: 🎸
 type: html
 tags:
+  - treino
   - música
-  - SVG
-  - violão
 entry: index.html
-status: prototype
+status: protótipo
 ---
 
-Protótipo web interativo para estudo musical.
+Protótipo de treino para violão
