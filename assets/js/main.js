@@ -143,7 +143,7 @@ const bar = (title, extra='') => `<div class="modal-bar"><div class="modal-title
 function webModal(p) {
   const expand = `<a class="icon-btn" href="${esc(p.file)}" title="Abrir projeto" aria-label="Abrir">${icon('expand')}</a>`;
   return `<div class="modal-box tall">${bar(p.title, expand)}<div class="modal-body frame-wrap"><div class="frame-loading">Carregando…</div>
-    <iframe class="frame" src="${esc(p.file)}" title="${esc(p.title)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe></div></div>`;
+    <iframe class="frame" src="${esc((p.file || '') + ((p.file || '').includes('?') ? '&' : '?') + 'embed=1')}" title="${esc(p.title)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe></div></div>`;
 }
 
 async function showItem(kind,id,push) {
@@ -172,7 +172,7 @@ let dockHoverTimer = 0;
 let dockHoverToken = 0;
 
 function previewWeb(p) {
-  const safeFile = esc(p.file || '');
+  const safeFile = esc((p.file || '') + ((p.file || '').includes('?') ? '&' : '?') + 'embed=1');
   return `<div class="dock-preview-media"><iframe src="${safeFile}" title="Prévia de ${esc(p.title)}" loading="lazy" tabindex="-1" aria-hidden="true"></iframe></div>`;
 }
 function previewNote(n) {

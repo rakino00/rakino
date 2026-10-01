@@ -26,15 +26,16 @@
     ]
   },
   {
-    "id": "rakino-race",
-    "file": "web-projects/rakino-race.html",
+    "id": "rakino-space",
+    "file": "web-projects/rakino-space.html",
     "type": "html",
-    "title": "Rakino Race 3D — Single Player",
-    "description": "Corrida infinita em terceira pessoa contra pilotos controlados pelo computador, com aceleração progressiva e cargas que reduzem temporariamente a velocidade dos adversários.",
-    "icon": "🏁",
+    "title": "Rakino Space 3D",
+    "description": "Voo 3D em velocidade constante, com direção livre, asteroides destrutíveis e pontuação.",
+    "icon": "☄️",
     "tags": [
       "jogo",
       "3D",
+      "espaço",
       "single player"
     ]
   },
@@ -42,13 +43,13 @@
     "id": "aim-arena-3d",
     "file": "web-projects/aim-arena-3d.html",
     "type": "html",
-    "title": "Aim Arena 3D — Treino de Precisão",
-    "description": "Treino de precisão em terceira pessoa, sem armas, com alvos ricocheteando, reaparecimento em dobro e pontuação em 60 segundos.",
+    "title": "Aim Arena 3D — Corredores",
+    "description": "Labirinto 3D com câmera livre, inimigos e um Summon Enemy que exige cinco disparos para ser destruído.",
     "icon": "🎯",
     "tags": [
       "jogo",
       "3D",
-      "treino",
+      "labirinto",
       "mira"
     ]
   }

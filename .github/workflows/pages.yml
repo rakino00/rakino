@@ -1,6 +1,4 @@
-# Publica o site no GitHub Pages a cada push na branch main.
-# Só as pastas do site vão para o ar (docs/, tools/ e _legado-php/ ficam de fora).
-name: Publicar no GitHub Pages
+name: Publicar Rakino no GitHub Pages
 
 on:
   push:
@@ -13,29 +11,53 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: github-pages
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Preparar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Gerar manifest dos Web Projects
+        run: python3 tools/gerar_manifest.py
+
+      - name: Validar JavaScript
+        shell: bash
+        run: |
+          set -e
+          for f in assets/js/*.js sw.js; do
+            node --check "$f"
+          done
+
+      - name: Validar JSON
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for path in [Path('data/web-projects.json'), Path('web-projects/_meta.json'), Path('manifest.webmanifest')]:
+              json.loads(path.read_text(encoding='utf-8'))
+              print('OK:', path)
+          PY
+
+      - name: Montar artefato
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
   deploy:
     runs-on: ubuntu-latest
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Gerar lista de Web Projects
-        run: python tools/gerar_manifest.py
-      - uses: actions/configure-pages@v5
-      - name: Montar pasta pública
-        run: |
-          mkdir _site
-          cp -r index.html 404.html sw.js manifest.webmanifest .nojekyll assets data web-projects _site/
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - id: deployment
+      - name: Publicar
+        id: deployment
         uses: actions/deploy-pages@v4
