@@ -132,6 +132,8 @@ export function bind(el) {
   });
 }
 
+export function getPending() { return items.filter((n) => !n.completed).slice().sort(cmp); }
+
 export function openEditor(id = null) {
   if (!uid) return;
   const n = id ? items.find((x) => x.id === id) : null;

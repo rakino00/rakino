@@ -21,7 +21,7 @@
     ],
     "order": 5
   },
-  "aim-arena-3d.html": {
+  "puzzle-suffers.html": {
     "title": "puzzle suffers",
     "description": "Labirinto 3D com WASD, colisão sólida nas paredes e inimigos, câmera orbital protegida e Summon Enemy.",
     "icon": "🎯",
@@ -32,7 +32,7 @@
     ],
     "order": 20
   },
-  "rakino-race-3d.html": {
+  "rakino-race.html": {
     "title": "Rakino Race",
     "description": "Corrida com pista contínua, aceleração, frenagem, ré, direção lateral e disparos que destroem carros rivais.",
     "icon": "🏁",

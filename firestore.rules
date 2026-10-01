@@ -51,6 +51,11 @@ service cloud.firestore {
       }
     }
 
+    // RakinoFood: cada usuário possui um único estado privado dentro do próprio UID.
+    match /users/{uid}/rakinoFood/{docId} {
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Web Projects são públicos para leitura. Somente o administrador pode alterar.
     match /webProjects/{id} {
       allow read: if true;

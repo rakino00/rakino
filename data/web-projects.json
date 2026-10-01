@@ -26,8 +26,8 @@
     ]
   },
   {
-    "id": "rakino-race-3d",
-    "file": "web-projects/rakino-race-3d.html",
+    "id": "rakino-race",
+    "file": "web-projects/rakino-race.html",
     "type": "html",
     "title": "Rakino Race",
     "description": "Corrida com pista contínua, aceleração, frenagem, ré, direção lateral e disparos que destroem carros rivais.",
@@ -53,8 +53,8 @@
     ]
   },
   {
-    "id": "aim-arena-3d",
-    "file": "web-projects/aim-arena-3d.html",
+    "id": "puzzle-suffers",
+    "file": "web-projects/puzzle-suffers.html",
     "type": "html",
     "title": "puzzle suffers",
     "description": "Labirinto 3D com WASD, colisão sólida nas paredes e inimigos, câmera orbital protegida e Summon Enemy.",

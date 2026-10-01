@@ -6,11 +6,12 @@ import * as Auth from './auth.js';
 import { esc, toast } from './ui.js';
 import { openModal, hideModal } from './modal.js';
 
-const DEFAULT_THEME = 'default';
+const DEFAULT_THEME = 'dragon';
 const DEFAULT_MODE = 'dark';
 const THEMES = {
   default: { label: 'Rakino Original', description: 'O Rakino atual: minimalista, neon e direto.' },
   forge: { label: 'Dream Forge', description: 'Um laboratório noturno onde software e jogos nascem juntos.' },
+  dragon: { label: 'Red Dragon Scale', description: 'Vermelho, preto e verde profundo com textura inspirada em escamas de dragão.' },
 };
 let currentTheme = DEFAULT_THEME;
 
