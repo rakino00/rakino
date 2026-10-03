@@ -23,7 +23,7 @@ const TABS = [
   { id: 'home', label: 'Início', icon: 'home', access: 'guest' },
   { id: 'web', label: 'Web Projects', icon: 'globe', access: 'guest' },
   { id: 'notations', label: 'Notations', icon: 'note', access: 'user' },
-  { id: 'python', label: 'Python', icon: 'python', access: 'guest' },
+  { id: 'python', label: 'Automações', icon: 'python', access: 'guest' },
   { id: 'admin', label: 'Admin', icon: 'settings', access: 'admin' },
 ];
 const tabDef = (id) => TABS.find((t) => t.id === id);

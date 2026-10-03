@@ -1,5 +1,5 @@
 /**
- * python.js — laboratório Python no navegador usando Pyodide.
+ * python.js — laboratório de automações Python no navegador usando Pyodide.
  * Não exige instalação de Python no computador.
  */
 import { esc, toast } from './ui.js';
@@ -27,8 +27,8 @@ const examples = {
 export function renderPython() {
   return `<div class="python-lab">
     <div class="hero">
-      <h1>🐍 Python</h1>
-      <p>Execute Python diretamente no navegador usando <strong>Pyodide</strong>.</p>
+      <h1>⚙️ Automações</h1>
+      <p>Execute scripts Python diretamente no navegador usando <strong>Pyodide</strong>.</p>
     </div>
     <div class="python-toolbar">
       <button class="btn btn-primary" id="pyRun">▶ Executar</button>

@@ -407,3 +407,10 @@ html[data-theme="light"][data-rakino-theme="forge"] .dock-radial-item{background
 .runner-wrap{margin:18px 0 10px}.runner-card{border:1px solid var(--border);border-radius:22px;overflow:hidden;background:linear-gradient(145deg,rgba(10,18,28,.94),rgba(8,13,20,.86));box-shadow:0 20px 60px rgba(0,0,0,.22)}.runner-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px}.runner-head h3{margin:2px 0 4px;font-size:1.35rem}.runner-head p{margin:0;color:var(--text-dim);font-size:.82rem;max-width:650px}.runner-kicker{font-size:.62rem;letter-spacing:.16em;color:var(--cyan);font-weight:800}.runner-canvas{display:block;width:100%;height:auto;min-height:170px;background:#07111a}.runner-help{padding:9px 16px;border-top:1px solid var(--border);font-size:.72rem;color:var(--text-dim)}.runner-help b{color:var(--text)}@media(max-width:640px){.runner-head{align-items:flex-start;flex-direction:column}.runner-head .btn{width:100%}}
 
 .runner-record{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:0 4px 10px;color:var(--text-dim);font-size:.86rem}.runner-record b{color:var(--text);font-variant-numeric:tabular-nums}
+
+/* Rakino 2.0.6: modais de jogos ocupam a viewport e o chat não bloqueia ações */
+body.no-scroll #chatBubbleRoot{display:none!important}
+.modal-root:has(iframe.frame){padding:0;background:#05070b}
+.modal-root:has(iframe.frame) .modal-box.tall{width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0}
+.modal-root:has(iframe.frame) .modal-bar{min-height:48px}
+@media(max-width:700px){.modal-root:has(iframe.frame){padding:0}}
