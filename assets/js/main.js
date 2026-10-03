@@ -31,6 +31,7 @@ const EMOJI = { web: '🌐' };
 const DATA_FILE = { web: 'web-projects' };
 const session = { ready: false, user: null, guest: sessionStorage.getItem('rakino_guest') === '1' };
 const panels = {};
+let openItemId = null;   // projeto atualmente aberto no modal (para o botão voltar/avançar trocar de projeto)
 const rendered = new Set();
 let activeTab = 'home';
 const cache = {};
@@ -82,14 +83,16 @@ async function getData(kind) {
           || RETIRED_WEB_TITLES.has(title)
           || /rakino[-_ ]space(?:[-_ ]3d)?|rakino[-_ ]race[-_ ]3d|aim[-_ ]arena[-_ ]3d/.test(id + ' ' + file + ' ' + title);
       };
-      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !isRetired(p));
+      const cloudList = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.file && !isRetired(p));
       const merged = new Map(cloudList.map(p => [p.id, p]));
       // O catálogo local tem precedência e também elimina duplicatas antigas por arquivo.
       localList.forEach(p => merged.set(p.id, { ...(merged.get(p.id) || {}), ...p }));
+      // Deduplica pelo arquivo (ignora maiúsculas): o catálogo local vence o do Firestore.
       const unique = new Map();
       [...merged.values()].filter(p => !isRetired(p)).forEach(p => {
         const key = String(p.file || p.title || p.id).trim().toLowerCase();
-        if (!unique.has(key) || p.id === 'puzzle-suffers' || p.id === 'rakino-race' || p.id === 'takamae-vesikika') unique.set(key, p);
+        const prev = unique.get(key);
+        if (!prev || localList.some(l => l.id === p.id)) unique.set(key, p);
       });
       cache[kind] = [...unique.values()].sort((a,b) => (a.order ?? 999) - (b.order ?? 999));
       return cache[kind];
@@ -167,7 +170,8 @@ function webModal(p) {
 async function showItem(kind,id,push) {
   const item = (await getData(kind)).find(x => x.id === id);
   if (!item) { history.replaceState(null,'',`#/${kind}`); return; }
-  const root = openModal(webModal(item), { hash: push ? `#/${kind}/${encodeURIComponent(id)}` : null, closeUrl:`#/${kind}` });
+  const root = openModal(webModal(item), { hash: push ? `#/${kind}/${encodeURIComponent(id)}` : null, closeUrl:`#/${kind}`, onClose: () => { if (openItemId === id) openItemId = null; } });
+  openItemId = id;
   root.querySelector('iframe')?.addEventListener('load', () => root.querySelector('.frame-loading')?.classList.add('done'));
 }
 
@@ -295,7 +299,7 @@ function route() {
   if (!allowed) { history.replaceState(null,'','#/home'); tab='home'; askLogin(def); }
   activate(tab);
   const id=rawId?decodeURIComponent(rawId):'';
-  if (id&&allowed&&DATA_FILE[tab]&&!isModalOpen()) showItem(tab,id,false);
+  if (id&&allowed&&DATA_FILE[tab]&&(!isModalOpen()||openItemId!==id)) showItem(tab,id,false);
   else if (!id&&isModalOpen()) hideModal();
 }
 
@@ -400,8 +404,21 @@ function bindGlobal() {
 async function boot(){
   initModal(); buildPanels(); bindGlobal(); bindTheme();
   if('serviceWorker' in navigator&&location.protocol!=='file:') navigator.serviceWorker.register('sw.js').catch(()=>{});
-  await Auth.init();
-  Auth.onUser(async u=>{const changed=(u?.uid||null)!==(session.user?.uid||null);session.user=u||null;if(u){if(changed)Notes.start(u);await Profile.loadForUser(u);Chat.start(u);}else {Notes.stop();Chat.stop();Profile.applySavedTheme();}if(changed||!session.ready){renderChip();renderDock();decide();}});
+  // Se o CDN do Firebase demorar ou estiver bloqueado, o site abre mesmo assim (modo visitante).
+  const fallback = setTimeout(() => { if (!session.ready) decide(); }, 6000);
+  const initP = Auth.init();
+  await Promise.race([initP, new Promise(r => setTimeout(() => r(false), 6000))]);
+  clearTimeout(fallback);
+  const onUser = async u => {
+    const changed = (u?.uid || null) !== (session.user?.uid || null);
+    session.user = u || null;
+    if (u) { if (changed) Notes.start(u); await Profile.loadForUser(u); Chat.start(u); }
+    else { Notes.stop(); Chat.stop(); Profile.applySavedTheme(); }
+    if (changed || !session.ready) { renderChip(); renderDock(); decide(); }
+  };
+  Auth.onUser(onUser);
+  // Firebase chegou atrasado (conexão lenta)? Assina o login agora, sem precisar recarregar.
+  if (!Auth.isReady()) initP.then(ok => { if (ok) Auth.onUser(onUser); });
   setTimeout(()=>{if(!session.ready)decide();},5000);
 }
 boot();

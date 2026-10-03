@@ -1,18 +1,20 @@
 [
   {
-    "id": "acordeplus",
+    "id": "acorde-plus",
     "file": "web-projects/acorde-plus/index.html",
     "type": "html",
-    "title": "Círculo das Quintas",
-    "description": "Roda interativa das tonalidades com diagramas de acordes para violão.",
-    "creator": "Rakino",
-    "creators": [],
+    "title": "acordePlus",
+    "description": "App para treino de acordes, escalas...",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
     "icon": "🎸",
     "tags": [
-      "música",
-      "SVG",
-      "teoria"
+      "treino",
+      "música"
     ],
+    "order": 1,
     "updated": ""
   },
   {
@@ -31,39 +33,45 @@
       "pessoal",
       "SVG"
     ],
+    "order": 2,
     "updated": ""
   },
   {
-    "id": "rakinofood",
+    "id": "rakino-food",
     "file": "web-projects/rakino-food/index.html",
     "type": "html",
-    "title": "RakinoFood — Gestão de Pedidos",
-    "description": "Gestão para restaurante: salão, cozinha, escritório, cardápio, pedidos, compras e balanço.",
-    "creator": "Rakino",
-    "creators": [],
-    "icon": "🍽️",
-    "tags": [
-      "restaurante",
-      "pedidos",
-      "gestão",
-      "financeiro"
+    "title": "RakinoFood",
+    "description": "Sistema de organização para pequenas empresas de fastfood",
+    "creator": "",
+    "creators": [
+      "Rakino"
     ],
+    "icon": "📈",
+    "tags": [
+      "sistema",
+      "gestao",
+      "banco de dados"
+    ],
+    "order": 3,
     "updated": ""
   },
   {
     "id": "rakino-race",
     "file": "web-projects/rakino-race/index.html",
     "type": "html",
-    "title": "Rakino Race",
-    "description": "Corrida com aceleração, frenagem, ré, direção lateral e disparos.",
-    "creator": "Rakino",
-    "creators": [],
-    "icon": "🏁",
+    "title": "destruRace",
+    "description": "Corrida com adversários ferozes, destrua-os.",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "🚘",
     "tags": [
       "jogo",
-      "corrida",
-      "3D"
+      "carro",
+      "batalha"
     ],
+    "order": 4,
     "updated": ""
   },
   {
@@ -71,33 +79,38 @@
     "file": "web-projects/takamae-vesikika/index.html",
     "type": "html",
     "title": "Takamae Vesikika",
-    "description": "Voo espacial 3D com direção livre e asteroides destrutíveis.",
-    "creator": "Rakino",
-    "creators": [],
-    "icon": "☄️",
+    "description": "Releitura de space invaders.",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "🛸",
     "tags": [
       "jogo",
       "espaço",
-      "3D",
-      "ação"
+      "nave",
+      "batalha"
     ],
+    "order": 5,
     "updated": ""
   },
   {
     "id": "puzzle-suffers",
     "file": "web-projects/puzzle-suffers/index.html",
     "type": "html",
-    "title": "Puzzle Suffers",
-    "description": "Labirinto 3D com WASD, colisão, câmera orbital e inimigos.",
-    "creator": "Rakino",
-    "creators": [],
-    "icon": "🎯",
+    "title": "puzzle suffers",
+    "description": "Jogo de treino de mira",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "🎮",
     "tags": [
       "jogo",
-      "labirinto",
-      "mira",
-      "3D"
+      "tiro",
+      "labirinto"
     ],
+    "order": 6,
     "updated": ""
   }
 ]

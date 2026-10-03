@@ -17,8 +17,8 @@ export function mountRunner(root) {
   const paintBest=()=>{bestEl.textContent=`${Math.floor(best.score||0)} m`;holderEl.textContent=best.name||'indivíduo desconhecido';};
   paintBest();
   const cloud=()=>Auth.ctx();
-  const loadCloud=async()=>{const {db,fs}=cloud();if(!db||!fs||!currentUser)return;try{const ref=fs.doc(db,'saltador','record');const snap=await fs.getDoc(ref);if(snap.exists()){const r=snap.data();if(Number(r.score)>Number(best.score)){best={score:Number(r.score)||0,name:r.name||'indivíduo desconhecido'};localStorage.setItem(RECORD_KEY,JSON.stringify(best));paintBest();}}}catch(e){console.warn('[Saltador] recorde online indisponível',e);}};
-  Auth.onUser(user=>{currentUser=user;loadCloud();});
+  const loadCloud=async()=>{const {db,fs}=cloud();if(!db||!fs)return;try{const ref=fs.doc(db,'saltador','record');const snap=await fs.getDoc(ref);if(snap.exists()){const r=snap.data();if(Number(r.score)>Number(best.score)){best={score:Number(r.score)||0,name:r.name||'indivíduo desconhecido'};localStorage.setItem(RECORD_KEY,JSON.stringify(best));paintBest();}}}catch(e){console.warn('[Saltador] recorde online indisponível',e);}};
+  let offUser=null;offUser=Auth.onUser(user=>{if(!canvas.isConnected){if(offUser)offUser();return;}currentUser=user;loadCloud();});
   const saveRecord=async score=>{const name=currentUser?(currentUser.displayName||currentUser.email||'indivíduo desconhecido'):'indivíduo desconhecido';if(score<=Number(best.score||0))return;best={score:Math.floor(score),name};localStorage.setItem(RECORD_KEY,JSON.stringify(best));paintBest();const {db,fs}=cloud();if(!db||!fs||!currentUser)return;try{const ref=fs.doc(db,'saltador','record');await fs.runTransaction(db,async tx=>{const snap=await tx.get(ref);if(!snap.exists()||Number(snap.data().score)<Math.floor(score))tx.set(ref,{score:Math.floor(score),name,uid:currentUser.uid,updatedAt:fs.serverTimestamp()});});}catch(e){console.warn('[Saltador] não foi possível sincronizar recorde',e);}};
   const playerSheet = new Image(), obstacleSheet = new Image();
   playerSheet.src = 'assets/sprites/saltador/player.png';
@@ -35,6 +35,14 @@ export function mountRunner(root) {
     if(!running){ctx.fillStyle='rgba(0,0,0,.38)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#eafaff';ctx.font='800 30px Segoe UI';ctx.fillText('Pressione Jogar ou Espaço',270,150);}
   };
   const spawn=()=>{const h=28+Math.random()*44,w=22+Math.random()*28;obstacles.push({x:canvas.width+20,y:ground-h,w,h,kind:Math.random()>.7,frame:Math.floor(Math.random()*4)});};
-  const loop=(now)=>{const dt=Math.min(.032,(now-last)/1000);last=now;player.vy+=1800*dt;player.y+=player.vy*dt;if(player.y>=ground-player.h){player.y=ground-player.h;player.vy=0;player.onGround=true;}speed+=dt*5;score+=dt*speed*.08;frameClock+=dt;if(frameClock>.11){frame=(frame+1)%4;frameClock=0;}next-=dt;if(next<=0){spawn();next=.72+Math.random()*.75;}for(const o of obstacles)o.x-=speed*dt;obstacles=obstacles.filter(o=>o.x+o.w>-20);for(const o of obstacles){if(player.x<o.x+o.w&&player.x+player.w>o.x&&player.y<o.y+o.h&&player.y+player.h>o.y){running=false;saveRecord(score);play.textContent='Tentar novamente';}}draw();if(running)raf=requestAnimationFrame(loop);};
-  play.addEventListener('click',start);canvas.addEventListener('pointerdown',e=>{e.preventDefault();jump();});window.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat){e.preventDefault();jump();}});reset();draw();
+  const loop=(now)=>{const dt=Math.min(.032,(now-last)/1000);last=now;player.vy+=1800*dt;player.y+=player.vy*dt;if(player.y>=ground-player.h){player.y=ground-player.h;player.vy=0;player.onGround=true;}speed+=dt*5;score+=dt*speed*.08;frameClock+=dt;if(frameClock>.11){frame=(frame+1)%4;frameClock=0;}next-=dt;if(next<=0){spawn();next=.72+Math.random()*.75;}for(const o of obstacles)o.x-=speed*dt;obstacles=obstacles.filter(o=>o.x+o.w>-20);for(const o of obstacles){if(player.x<o.x+o.w&&player.x+player.w>o.x&&player.y<o.y+o.h&&player.y+player.h>o.y){running=false;saveRecord(score);play.textContent='Tentar novamente';}}draw();if(running&&canvas.isConnected)raf=requestAnimationFrame(loop);};
+  play.addEventListener('click',start);canvas.addEventListener('pointerdown',e=>{e.preventDefault();jump();});const onKey=e=>{
+    if(!canvas.isConnected){window.removeEventListener('keydown',onKey);return;}   // jogo saiu da tela: solta o listener
+    if(e.code!=='Space'||e.repeat)return;
+    const t=e.target;
+    if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(t.tagName)))return;  // não rouba o espaço de campos de texto
+    if(!canvas.offsetParent||document.body.classList.contains('no-scroll'))return;               // aba oculta ou modal aberto
+    e.preventDefault();jump();
+  };
+  window.addEventListener('keydown',onKey);reset();draw();
 }

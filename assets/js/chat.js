@@ -91,7 +91,20 @@ function subscribe() {
       messages = snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
       renderBubble();
       const open = document.querySelector('#modalRoot .chat-shell');
-      if (open) { open.outerHTML = chatMarkup(true); bindChat(document.getElementById('modalRoot')); }
+      if (open) {
+        const typed = open.querySelector('[data-chat-input]');
+        const draft = typed ? typed.value : '';
+        const hadFocus = typed && document.activeElement === typed;
+        const box = open.querySelector('[data-chat-messages]');
+        const atBottom = !box || box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+        open.outerHTML = chatMarkup(true);
+        const rootEl = document.getElementById('modalRoot');
+        bindChat(rootEl);
+        const input = rootEl.querySelector('[data-chat-input]');
+        if (input) { input.value = draft; if (hadFocus) input.focus(); }
+        const nb = rootEl.querySelector('[data-chat-messages]');
+        if (nb && !atBottom) nb.scrollTop = box ? box.scrollTop : 0;
+      }
     },
     err => { console.error(err); toast('O chat está temporariamente indisponível.'); }
   );

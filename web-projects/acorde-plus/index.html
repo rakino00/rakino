@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Círculo das Quintas</title>
+<style>
+  :root{
+    --bg:#11162b;
+    --bg2:#161d38;
+    --panel:#1b2245;
+    --line:#333c68;
+    --text:#eef0fb;
+    --text-dim:#9099c2;
+    --major:#f2b84b;
+    --minor:#57c7e3;
+    --dim:#ef7d9c;
+    --accent:#f2b84b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;padding:0;min-height:100%;
+    background:radial-gradient(circle at 50% 0%, var(--bg2), var(--bg) 70%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overflow-x:hidden;
+  }
+  .app{
+    max-width:480px;margin:0 auto;
+    padding:env(safe-area-inset-top,16px) 16px calc(env(safe-area-inset-bottom,16px) + 16px);
+    display:flex;flex-direction:column;gap:12px;
+  }
+
+  /* Guia Visual Superior (Sequência) */
+  .degree-guide-wrap {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .degree-guide {
+    width: 220px;
+    height: 90px;
+  }
+
+  .mode-toggle{
+    display:flex;background:var(--panel);border:1px solid var(--line);
+    border-radius:999px;padding:4px;gap:4px;
+  }
+  .mode-toggle button{
+    flex:1;border:none;background:transparent;color:var(--text-dim);
+    padding:8px 4px;border-radius:999px;font-size:.85rem;font-weight:600;
+    cursor:pointer;transition:background .2s,color .2s;
+  }
+  .mode-toggle button.active{background:var(--accent);color:#1a1408;}
+
+  .wheel-wrap{
+    position:relative;width:100%;max-width:360px;margin:0 auto;
+    touch-action:none;user-select:none;
+  }
+  .pointer{
+    position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+    width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;
+    border-top:12px solid var(--accent);filter:drop-shadow(0 0 4px rgba(242,184,75,.6));
+    z-index:5;
+  }
+  svg{display:block;width:100%;height:auto;}
+  .node circle{stroke:var(--line);stroke-width:1;transition:fill .25s,opacity .25s,r .2s;}
+  .node text{
+    font-size:13px;font-weight:700;fill:#151a30;text-anchor:middle;dominant-baseline:central;
+    pointer-events:none;transition:opacity .25s,fill .25s;
+  }
+  .node-dim text{font-size:9.5px;}
+  .node.muted circle{fill:var(--panel);opacity:.42;}
+  .node.muted text{fill:var(--text-dim);opacity:.55;}
+  .node-major.focused circle{fill:var(--major);}
+  .node-minor.focused circle{fill:var(--minor);}
+  .node-dim.focused circle{fill:var(--dim);}
+  .node-major.focused text, .node-minor.focused text{fill:#151a30;}
+  .node-dim.focused text{fill:#2a0f1a;}
+  .guide{fill:none;stroke:var(--line);stroke-width:1;opacity:.5;}
+
+  .center-label{
+    font-size:28px;font-weight:800;fill:var(--text);text-anchor:middle;dominant-baseline:central;
+  }
+  .center-sub{
+    font-size:10px;font-weight:600;fill:var(--text-dim);text-anchor:middle;letter-spacing:.5px;
+  }
+
+  /* Área dos Acordes (Diagramas) */
+  .chords-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+  }
+  .chord-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .chord-card.M { border-color: rgba(242,184,75,0.4); }
+  .chord-card.m { border-color: rgba(87,199,227,0.4); }
+  .chord-card.d { border-color: rgba(239,125,156,0.4); }
+
+  .chord-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 4px 4px;
+    align-items: baseline;
+  }
+  .chord-roman { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); }
+  .chord-title { font-size: 1rem; font-weight: 800; }
+  .M .chord-title { color: var(--major); }
+  .m .chord-title { color: var(--minor); }
+  .d .chord-title { color: var(--dim); }
+
+  /* Estilos do SVG do Braço do Violão */
+  .fretboard { width: 85px; height: 100px; }
+  .fret-line { stroke: var(--text-dim); stroke-width: 1; opacity: 0.6; }
+  .string-line { stroke: var(--text-dim); stroke-width: 1.2; opacity: 0.8; }
+  .nut { stroke: var(--text); stroke-width: 3.5; }
+  .finger-dot { fill: var(--text); }
+  .barre { stroke: var(--text); stroke-linecap: round; }
+  .marker-text { font-size: 9px; font-weight: 700; fill: var(--text-dim); text-anchor: middle; }
+  .fret-num { font-size: 9px; font-weight: 600; fill: var(--text-dim); }
+</style>
+<style>
+/* Rakino project navigation */
+.rakino-home{position:fixed;left:14px;top:14px;z-index:9999;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 12px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(7,13,20,.82);color:#eafaff;text-decoration:none;font:700 12px/1 Segoe UI,system-ui,sans-serif;backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.25)}html.embed-preview .rakino-home,body.embed .rakino-home{display:none!important} body.embed .rakino-home{display:none!important}.rakino-home:hover{border-color:#22d3ee;color:#22d3ee;transform:translateY(-1px)}
+</style><script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-preview');</script></head>
+<body><script>if(new URLSearchParams(location.search).get('embed')==='1')document.body.classList.add('embed');</script><a class="rakino-home" href="../../index.html#/home" aria-label="Voltar ao início">← Início</a>
+<div class="app">
+
+  <!-- Guia visual superior com os graus -->
+  <div class="degree-guide-wrap">
+    <svg class="degree-guide" viewBox="0 0 200 90" id="guideSvg"></svg>
+  </div>
+
+  <div class="mode-toggle">
+    <button data-mode="major" class="active" type="button">Tom Maior</button>
+    <button data-mode="minor" type="button">Tom Menor</button>
+  </div>
+
+  <div class="wheel-wrap" id="wheelWrap">
+    <div class="pointer"></div>
+    <svg id="wheel" viewBox="0 0 400 400">
+      <circle class="guide" cx="200" cy="200" r="165"></circle>
+      <circle class="guide" cx="200" cy="200" r="118"></circle>
+      <circle class="guide" cx="200" cy="200" r="75"></circle>
+      <g id="nodesLayer"></g>
+      <text class="center-label" id="centerLabel" x="200" y="192">C</text>
+      <text class="center-sub" id="centerSub" x="200" y="214">TOM MAIOR</text>
+    </svg>
+  </div>
+
+  <div class="chords-grid" id="chordGrid"></div>
+
+</div>
+
+<script>
+(function(){
+  var majors = ["C","G","D","A","E","B","F♯","D♭","A♭","E♭","B♭","F"];
+  var minors = ["Am","Em","Bm","F♯m","C♯m","G♯m","D♯m","B♭m","Fm","Cm","Gm","Dm"];
+  var dims   = ["B°","F♯°","C♯°","G♯°","D♯°","A♯°","F°","C°","G°","D°","A°","E°"];
+
+  // Dicionário de diagramas de acordes [E, A, D, G, B, e]
+  // frets: número da casa, markers: indicação de corda solta (o) ou não tocada (x) acima da pestana
+  var chordDb = {
+    "C":    { frets:[x,3,2,0,1,0], baseFret:1 },
+    "G":    { frets:[3,2,0,0,0,3], baseFret:1 },
+    "D":    { frets:[x,x,0,2,3,2], baseFret:1 },
+    "A":    { frets:[x,0,2,2,2,0], baseFret:1 },
+    "E":    { frets:[0,2,2,1,0,0], baseFret:1 },
+    "B":    { frets:[x,2,4,4,4,2], barre:2, baseFret:1 },
+    "F♯":   { frets:[2,4,4,3,2,2], barre:2, baseFret:1 },
+    "F":    { frets:[1,3,3,2,1,1], barre:1, baseFret:1 },
+    "D♭":   { frets:[x,4,6,6,6,4], barre:4, baseFret:1 },
+    "A♭":   { frets:[4,6,6,5,4,4], barre:4, baseFret:1 },
+    "E♭":   { frets:[x,6,8,8,8,6], barre:6, baseFret:1 },
+    "B♭":   { frets:[x,1,3,3,3,1], barre:1, baseFret:1 },
+
+    "Am":   { frets:[x,0,2,2,1,0], baseFret:1 },
+    "Em":   { frets:[0,2,2,0,0,0], baseFret:1 },
+    "Bm":   { frets:[x,2,4,4,3,2], barre:2, baseFret:1 },
+    "F♯m":  { frets:[2,4,4,2,2,2], barre:2, baseFret:1 },
+    "C♯m":  { frets:[x,4,6,6,5,4], barre:4, baseFret:1 },
+    "G♯m":  { frets:[4,6,6,4,4,4], barre:4, baseFret:1 },
+    "D♯m":  { frets:[x,6,8,8,7,6], barre:6, baseFret:1 },
+    "B♭m":  { frets:[x,1,3,3,2,1], barre:1, baseFret:1 },
+    "Fm":   { frets:[1,3,3,1,1,1], barre:1, baseFret:1 },
+    "Cm":   { frets:[x,3,5,5,4,3], barre:3, baseFret:1 },
+    "Gm":   { frets:[3,5,5,3,3,3], barre:3, baseFret:1 },
+    "Dm":   { frets:[x,x,0,2,3,1], baseFret:1 },
+
+    "B°":   { frets:[x,2,3,4,3,x], baseFret:1 },
+    "F♯°":  { frets:[2,x,1,2,1,x], baseFret:1 },
+    "C♯°":  { frets:[x,4,5,6,5,x], baseFret:1 },
+    "G♯°":  { frets:[4,x,3,4,3,x], baseFret:1 },
+    "D♯°":  { frets:[x,6,7,8,7,x], baseFret:1 },
+    "A♯°":  { frets:[x,1,2,3,2,x], baseFret:1 },
+    "F°":   { frets:[1,x,0,1,0,x], baseFret:1 },
+    "C°":   { frets:[x,3,4,5,4,x], baseFret:1 },
+    "G°":   { frets:[3,x,2,3,2,x], baseFret:1 },
+    "D°":   { frets:[x,x,0,1,3,1], baseFret:1 },
+    "A°":   { frets:[x,0,1,2,1,x], baseFret:1 },
+    "E°":   { frets:[0,x,2,3,2,x], baseFret:1 }
+  };
+  var x = 'x';
+
+  var cx=200, cy=200, rOuter=165, rMid=118, rInner=75;
+  var rMajor=27, rMinorR=22, rDimR=16;
+
+  var svgNS="http://www.w3.org/2000/svg";
+  var layer=document.getElementById('nodesLayer');
+  var nodes=[];
+
+  function mk(tag, attrs){
+    var el=document.createElementNS(svgNS, tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  for(var i=0;i<12;i++){
+    var gMaj=mk('g',{class:'node node-major'});
+    var cMaj=mk('circle',{r:rMajor});
+    var tMaj=mk('text',{});
+    tMaj.textContent=majors[i];
+    gMaj.appendChild(cMaj); gMaj.appendChild(tMaj);
+
+    var gMin=mk('g',{class:'node node-minor'});
+    var cMin=mk('circle',{r:rMinorR});
+    var tMin=mk('text',{});
+    tMin.textContent=minors[i];
+    gMin.appendChild(cMin); gMin.appendChild(tMin);
+
+    var gDim=mk('g',{class:'node node-dim'});
+    var cDim=mk('circle',{r:rDimR});
+    var tDim=mk('text',{});
+    tDim.textContent=dims[i];
+    gDim.appendChild(cDim); gDim.appendChild(tDim);
+
+    layer.appendChild(gMaj); layer.appendChild(gMin); layer.appendChild(gDim);
+    nodes.push({maj:gMaj,tMaj:tMaj,min:gMin,tMin:tMin,dim:gDim,tDim:tDim});
+  }
+
+  var rotation=0;
+  var mode='major';
+  var focusedSlot=0;
+
+  function mod(n,m){ return ((n%m)+m)%m; }
+
+  function place(g, r, angleDeg){
+    var rad=angleDeg*Math.PI/180;
+    var x=cx+r*Math.cos(rad);
+    var y=cy+r*Math.sin(rad);
+    g.setAttribute('transform','translate('+x.toFixed(2)+','+y.toFixed(2)+')');
+  }
+
+  function drawGuideSvg(){
+    var svg = document.getElementById('guideSvg');
+    svg.innerHTML = '';
+
+    var path = mk('path', {
+      d: "M 20,85 A 90,90 0 0,1 180,85 L 150,85 A 60,60 0 0,0 50,85 Z",
+      fill: "none", stroke: "var(--line)", "stroke-width": "1"
+    });
+    svg.appendChild(path);
+
+    var lines = [
+      {x1:73,y1:25,x2:85,y2:45},
+      {x1:127,y1:25,x2:115,y2:45},
+      {x1:50,y1:85,x2:20,y2:85},
+      {x1:150,y1:85,x2:180,y2:85}
+    ];
+    lines.forEach(function(l){
+      svg.appendChild(mk('line', {x1:l.x1, y1:l.y1, x2:l.x2, y2:l.y2, stroke:"var(--line)", "stroke-width":"1"}));
+    });
+
+    var labels = mode === 'major' ? [
+      {t:"I.", x:100, y:20, c:"var(--major)"},
+      {t:"IV.", x:50, y:40, c:"var(--major)"},
+      {t:"V.", x:150, y:40, c:"var(--major)"},
+      {t:"vi.", x:100, y:52, c:"var(--minor)"},
+      {t:"ii.", x:68, y:65, c:"var(--minor)"},
+      {t:"iii.", x:132, y:65, c:"var(--minor)"},
+      {t:"vii°", x:100, y:78, c:"var(--dim)"}
+    ] : [
+      {t:"i.", x:100, y:20, c:"var(--minor)"},
+      {t:"iv.", x:50, y:40, c:"var(--minor)"},
+      {t:"v.", x:150, y:40, c:"var(--minor)"},
+      {t:"III", x:100, y:52, c:"var(--major)"},
+      {t:"VI", x:68, y:65, c:"var(--major)"},
+      {t:"VII", x:132, y:65, c:"var(--major)"},
+      {t:"ii°", x:100, y:78, c:"var(--dim)"}
+    ];
+
+    labels.forEach(function(lbl){
+      var txt = mk('text', {
+        x: lbl.x, y: lbl.y, fill: lbl.c,
+        "font-size": "11", "font-weight": "bold",
+        "text-anchor": "middle", "dominant-baseline": "central"
+      });
+      txt.textContent = lbl.t;
+      svg.appendChild(txt);
+    });
+  }
+
+  function update(){
+    var raw = mod(Math.round(-rotation/30), 12);
+    focusedSlot = raw;
+    var prev = mod(focusedSlot-1,12);
+    var next = mod(focusedSlot+1,12);
+
+    for(var i=0;i<12;i++){
+      var angle = -90 + i*30 + rotation;
+      place(nodes[i].maj, rOuter, angle);
+      place(nodes[i].min, rMid, angle);
+      place(nodes[i].dim, rInner, angle);
+
+      var isFocusGroup = (i===focusedSlot || i===prev || i===next);
+      nodes[i].maj.classList.toggle('muted', !isFocusGroup);
+      nodes[i].min.classList.toggle('muted', !isFocusGroup);
+      nodes[i].dim.classList.toggle('muted', !(i===focusedSlot));
+      nodes[i].maj.classList.toggle('focused', isFocusGroup);
+      nodes[i].min.classList.toggle('focused', isFocusGroup);
+      nodes[i].dim.classList.toggle('focused', i===focusedSlot);
+    }
+
+    document.getElementById('centerLabel').textContent = mode==='major' ? majors[focusedSlot] : minors[focusedSlot];
+    document.getElementById('centerSub').textContent = mode==='major' ? 'TOM MAIOR' : 'TOM MENOR';
+
+    drawGuideSvg();
+    renderChords(focusedSlot);
+  }
+
+  function createChordSvg(chordName){
+    var chord = chordDb[chordName] || { frets:[0,0,0,0,0,0], baseFret:1 };
+    var svg = mk('svg', { class:'fretboard', viewBox:'0 0 70 80' });
+
+    var startX = 15, startY = 18, stringGap = 8, fretGap = 12;
+
+    // Desenha Nut (pestana topo) ou linha
+    var isNut = !chord.barre && (chord.baseFret === 1);
+    svg.appendChild(mk('line', {
+      x1: startX, y1: startY, x2: startX + 5*stringGap, y2: startY,
+      class: isNut ? 'nut' : 'fret-line'
+    }));
+
+    // Trastes (4 casas)
+    for(var f=1; f<=4; f++){
+      svg.appendChild(mk('line', {
+        x1: startX, y1: startY + f*fretGap, x2: startX + 5*stringGap, y2: startY + f*fretGap,
+        class: 'fret-line'
+      }));
+    }
+
+    // Cordas (6)
+    for(var s=0; s<6; s++){
+      svg.appendChild(mk('line', {
+        x1: startX + s*stringGap, y1: startY, x2: startX + s*stringGap, y2: startY + 4*fretGap,
+        class: 'string-line'
+      }));
+    }
+
+    // Posições dos dedos
+    var minFret = 99, maxFret = 0;
+    chord.frets.forEach(function(f){
+      if(typeof f === 'number' && f > 0){
+        if(f < minFret) minFret = f;
+        if(f > maxFret) maxFret = f;
+      }
+    });
+
+    var offset = 0;
+    if(maxFret > 4) {
+      offset = minFret - 1;
+      var numTxt = mk('text', { x: 2, y: startY + 10, class: 'fret-num' });
+      numTxt.textContent = minFret + 'ª';
+      svg.appendChild(numTxt);
+    }
+
+    // Marcadores topo (X ou O)
+    chord.frets.forEach(function(f, s){
+      var xPos = startX + s*stringGap;
+      if(f === 'x' || f === 0){
+        var mark = mk('text', { x: xPos, y: startY - 4, class: 'marker-text' });
+        mark.textContent = f === 'x' ? '×' : 'o';
+        svg.appendChild(mark);
+      }
+    });
+
+    // Pestana
+    if(chord.barre){
+      var bFret = chord.barre - offset;
+      if(bFret >= 1 && bFret <= 4){
+        var yPos = startY + (bFret - 0.5)*fretGap;
+        svg.appendChild(mk('line', {
+          x1: startX, y1: yPos, x2: startX + 5*stringGap, y2: yPos,
+          class: 'barre', 'stroke-width': 7
+        }));
+      }
+    }
+
+    // Bolinhas dos dedos
+    chord.frets.forEach(function(f, s){
+      if(typeof f === 'number' && f > 0){
+        var displayFret = f - offset;
+        if(displayFret >= 1 && displayFret <= 4){
+          var cxPos = startX + s*stringGap;
+          var cyPos = startY + (displayFret - 0.5)*fretGap;
+          svg.appendChild(mk('circle', { cx: cxPos, cy: cyPos, r: 3.5, class: 'finger-dot' }));
+        }
+      }
+    });
+
+    return svg;
+  }
+
+  function renderChords(slot){
+    var prev=mod(slot-1,12), next=mod(slot+1,12);
+    var grid=document.getElementById('chordGrid');
+    grid.innerHTML='';
+    var data;
+    if(mode==='major'){
+      data=[
+        {roman:'I', name:majors[slot], cls:'M'},
+        {roman:'ii', name:minors[prev], cls:'m'},
+        {roman:'iii', name:minors[next], cls:'m'},
+        {roman:'IV', name:majors[prev], cls:'M'},
+        {roman:'V', name:majors[next], cls:'M'},
+        {roman:'vi', name:minors[slot], cls:'m'},
+        {roman:'vii°', name:dims[slot], cls:'d'}
+      ];
+    } else {
+      data=[
+        {roman:'i', name:minors[slot], cls:'m'},
+        {roman:'ii°', name:dims[slot], cls:'d'},
+        {roman:'III', name:majors[slot], cls:'M'},
+        {roman:'iv', name:minors[prev], cls:'m'},
+        {roman:'v', name:minors[next], cls:'m'},
+        {roman:'VI', name:majors[prev], cls:'M'},
+        {roman:'VII', name:majors[next], cls:'M'}
+      ];
+    }
+
+    data.forEach(function(d){
+      var card = document.createElement('div');
+      card.className = 'chord-card ' + d.cls;
+
+      var header = document.createElement('div');
+      header.className = 'chord-header';
+
+      var roman = document.createElement('span');
+      roman.className = 'chord-roman';
+      roman.textContent = d.roman;
+
+      var title = document.createElement('span');
+      title.className = 'chord-title';
+      title.textContent = d.name;
+
+      header.appendChild(roman);
+      header.appendChild(title);
+      card.appendChild(header);
+
+      var diagram = createChordSvg(d.name);
+      card.appendChild(diagram);
+
+      grid.appendChild(card);
+    });
+  }
+
+  // Rotação por toque/arraste
+  var wrap=document.getElementById('wheelWrap');
+  var dragging=false, lastAngle=0;
+
+  function getCenter(){
+    var rect=wrap.getBoundingClientRect();
+    return {x:rect.left+rect.width/2, y:rect.top+rect.height/2};
+  }
+  function angleAt(clientX, clientY){
+    var c=getCenter();
+    return Math.atan2(clientY-c.y, clientX-c.x)*180/Math.PI;
+  }
+
+  function onDown(e){
+    dragging=true;
+    var pt = e.touches ? e.touches[0] : e;
+    lastAngle = angleAt(pt.clientX, pt.clientY);
+    wrap.setPointerCapture && e.pointerId!=null && wrap.setPointerCapture(e.pointerId);
+  }
+  function onMove(e){
+    if(!dragging) return;
+    var pt = e.touches ? e.touches[0] : e;
+    var a = angleAt(pt.clientX, pt.clientY);
+    var delta = a - lastAngle;
+    if(delta>180) delta-=360;
+    if(delta<-180) delta+=360;
+    rotation += delta;
+    lastAngle = a;
+    update();
+    e.preventDefault();
+  }
+  function onUp(){
+    if(!dragging) return;
+    dragging=false;
+    rotation = Math.round(rotation/30)*30;
+    update();
+  }
+
+  wrap.addEventListener('pointerdown', onDown);
+  wrap.addEventListener('pointermove', onMove, {passive:false});
+  window.addEventListener('pointerup', onUp);
+  wrap.addEventListener('touchstart', onDown, {passive:true});
+  wrap.addEventListener('touchmove', onMove, {passive:false});
+  window.addEventListener('touchend', onUp);
+
+  // Seleção de Tom Maior/Menor
+  var modeButtons = document.querySelectorAll('.mode-toggle button');
+  modeButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      modeButtons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      mode = btn.getAttribute('data-mode');
+      update();
+    });
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>

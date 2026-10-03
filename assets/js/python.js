@@ -57,6 +57,13 @@ export function bindPython(root) {
     if (examples[example.value]) code.value = examples[example.value];
   });
   clear.addEventListener('click', () => { output.textContent = ''; });
+  code.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const { selectionStart: s, selectionEnd: en } = code;
+      code.setRangeText('    ', s, en, 'end');
+    } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run.click(); }
+  });
   run.addEventListener('click', async () => {
     run.disabled = true;
     status.textContent = 'Carregando Pyodide…';
@@ -64,8 +71,8 @@ export function bindPython(root) {
     try {
       const py = await loadPyodideRuntime();
       status.textContent = 'Pyodide pronto';
-      py.setStdout({ batched: (s) => { output.textContent += s; } });
-      py.setStderr({ batched: (s) => { output.textContent += s; } });
+      py.setStdout({ batched: (s) => { output.textContent += s + '\n'; } });
+      py.setStderr({ batched: (s) => { output.textContent += s + '\n'; } });
       await py.runPythonAsync(code.value);
       if (!output.textContent) output.textContent = 'Executado sem saída.';
     } catch (err) {
