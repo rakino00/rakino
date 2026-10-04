@@ -1,6 +1,6 @@
 /**
  * main.js — Rakino
- * Seções atuais: Início, Web Projects, Notations e Python.
+ * Seções atuais: Início, Web Projects, Notations e Automações.
  * Admin: somente rakifernn@gmail.com.
  */
 import { $, esc, toast, icon, fmtDateBR } from './ui.js';
@@ -11,6 +11,8 @@ import * as Profile from './profile.js';
 import * as Chat from './chat.js';
 import { renderPython, bindPython } from './python.js';
 import { mountRunner } from './runner.js';
+import { getRecord } from './records.js';
+import { LOGO_SRC, LOGO_FALLBACK } from './site-config.js';
 
 const ADMIN_EMAIL = 'rakifernn@gmail.com';
 
@@ -106,19 +108,29 @@ async function getData(kind) {
   return cache[kind];
 }
 
-function card(item, kind) {
+const GAME_IDS = new Set(['rakino-race', 'takamae-vesikika', 'puzzle-suffers']);
+const isGame = item => GAME_IDS.has(String(item.id || '').toLowerCase()) || (item.tags || []).some(t => String(t).toLowerCase() === 'jogo');
+const recordCache = {};
+async function cardRecord(item) {
+  if (!isGame(item)) return '';
+  const r = recordCache[item.id] || await getRecord(item.id);
+  recordCache[item.id] = r;
+  return `<div class="card-record"><span>🏆 Recorde</span><strong>${r.score > 0 ? esc(String(r.score)) : '—'}</strong><small>${esc(r.score > 0 ? r.name : 'ainda não registrado')}</small></div>`;
+}
+async function card(item, kind) {
   const cover = item.cover || coverSVG(item);
   const tags = kind === 'web'
     ? [`<span class="tag ok">.${esc(item.type || 'html')}</span>`, ...(item.tags || []).map(t => `<span class="tag">${esc(t)}</span>`)]
     : [];
-  return `<article class="card" role="button" tabindex="0" data-open data-kind="${kind}" data-id="${esc(item.id)}">
-    <img class="card-image" src="${esc(cover)}" alt="Capa automática de ${esc(item.title)}" loading="lazy">
-    <div class="card-body"><h3 class="card-title">${esc(item.title)}</h3>
-    <p class="card-desc">${esc(item.description || '')}</p>${item.creator||item.creators?.length?`<p class="card-desc"><small>Por: ${esc([...(item.creator?[item.creator]:[]),...(item.creators||[])].join(', '))}</small></p>`:''}<div class="card-tags">${tags.join('')}</div></div></article>`;
+  const record = await cardRecord(item);
+  const gameLink = isGame(item) ? `href="${esc(item.file)}"` : '';
+  return isGame(item)
+    ? `<a class="card game-card" ${gameLink} data-game-card><img class="card-image" src="${esc(cover)}" alt="Capa automática de ${esc(item.title)}" loading="lazy"><div class="card-body"><h3 class="card-title">${esc(item.title)}</h3><p class="card-desc">${esc(item.description || '')}</p>${item.creator||item.creators?.length?`<p class="card-desc"><small>Por: ${esc([...(item.creator?[item.creator]:[]),...(item.creators||[])].join(', '))}</small></p>`:''}${record}<div class="card-tags">${tags.join('')}</div></div></a>`
+    : `<article class="card" role="button" tabindex="0" data-open data-kind="${kind}" data-id="${esc(item.id)}"><img class="card-image" src="${esc(cover)}" alt="Capa automática de ${esc(item.title)}" loading="lazy"><div class="card-body"><h3 class="card-title">${esc(item.title)}</h3><p class="card-desc">${esc(item.description || '')}</p>${item.creator||item.creators?.length?`<p class="card-desc"><small>Por: ${esc([...(item.creator?[item.creator]:[]),...(item.creators||[])].join(', '))}</small></p>`:''}<div class="card-tags">${tags.join('')}</div></div></article>`;
 }
-const cards = (list, kind) => list.map(i => card(i, kind)).join('');
-const gridOrEmpty = (list, kind, empty) => list.length ? `<div class="grid">${cards(list, kind)}</div>` : `<p class="empty-state">${empty}</p>`;
-const rowOrEmpty = (list, kind) => list.length ? `<div class="row-scroll">${cards(list.slice(0,8), kind)}</div>` : '<p class="empty-state">Nada por aqui ainda.</p>';
+const cards = async (list, kind) => (await Promise.all(list.map(i => card(i, kind)))).join('');
+const gridOrEmpty = async (list, kind, empty) => list.length ? `<div class="grid">${await cards(list, kind)}</div>` : `<p class="empty-state">${empty}</p>`;
+const rowOrEmpty = async (list, kind) => list.length ? `<div class="row-scroll">${await cards(list.slice(0,8), kind)}</div>` : '<p class="empty-state">Nada por aqui ainda.</p>';
 
 function buildPanels() {
   const main = $('#main');
@@ -147,7 +159,7 @@ async function renderTab(id) {
   const list = await getData(id);
   el.innerHTML = `<h2 class="section-title"><span class="accent">🌐</span> Web Projects</h2>
     <p class="lead">Páginas e apps simples rodando direto no navegador.</p>
-    ${gridOrEmpty(list, id, 'Nenhum projeto cadastrado.')}`;
+    ${await gridOrEmpty(list, id, 'Nenhum projeto cadastrado.')}`;
 }
 
 async function renderHome() {
@@ -216,7 +228,7 @@ async function dockRadialItems(tab) {
     const list = await getData('web');
     return list.map(p => radialButton({action:`web:${p.id}`,label:p.title,media:previewWeb(p),cls:'dock-web-preview'})).join('');
   }
-  if (tab === 'python') return radialButton({action:'tab:python',label:'Python',media:previewPython(),cls:'dock-python-preview'});
+  if (tab === 'python') return radialButton({action:'tab:python',label:'Automações',media:previewPython(),cls:'dock-python-preview'});
   if (tab === 'notations') {
     if (!session.user) return radialButton({action:'login:notations',label:'Entrar para ver anotações',media:'<div class="dock-project-orb locked"><span>🔒</span><img src="assets/img/dock-pulse.gif" alt=""></div>',cls:'dock-note-preview-card'});
     const list = Notes.getPending ? Notes.getPending() : [];
@@ -224,7 +236,7 @@ async function dockRadialItems(tab) {
     return list.map(n => radialButton({action:`note:${n.id}`,label:n.title || 'Anotação',media:previewNote(n),cls:'dock-note-preview-card'})).join('');
   }
   if (tab === 'home') return [
-    radialButton({action:'tab:python',label:'Python',media:previewPython(),cls:'dock-category-card'}),
+    radialButton({action:'tab:python',label:'Automações',media:previewPython(),cls:'dock-category-card'}),
     ...(session.user && (Notes.getPending ? Notes.getPending().length : Notes.pendingCount()) ? [radialButton({action:'tab:notations',label:'Anotações e tarefas pendentes',media:previewNote({title:'Notas'}),cls:'dock-category-card'})] : [])
   ].join('');
   if (tab === 'admin') return radialButton({action:'tab:admin',label:'Painel administrativo',media:'<div class="dock-project-orb"><span>⚙</span><img src="assets/img/dock-pulse.gif" alt=""></div>',cls:'dock-category-card'});
@@ -368,6 +380,7 @@ function showApp() {
 }
 function decide() { session.ready=true; hideBoot(); (session.user||session.guest)?showApp():showLogin(); }
 function goLogin() { session.guest=false; sessionStorage.removeItem('rakino_guest'); showLogin(); }
+function applyLogo(){ document.querySelectorAll('[data-site-logo]').forEach(img => { img.src = LOGO_SRC; img.onerror = () => { img.onerror = null; img.src = LOGO_FALLBACK; }; }); }
 function hideBoot(){const b=$('#boot');if(!b)return;b.classList.add('done');setTimeout(()=>b.remove(),400);}
 
 function bindTheme() {
@@ -402,6 +415,7 @@ function bindGlobal() {
 }
 
 async function boot(){
+  applyLogo();
   initModal(); buildPanels(); bindGlobal(); bindTheme();
   if('serviceWorker' in navigator&&location.protocol!=='file:') navigator.serviceWorker.register('sw.js').catch(()=>{});
   // Se o CDN do Firebase demorar ou estiver bloqueado, o site abre mesmo assim (modo visitante).

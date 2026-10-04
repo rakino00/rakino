@@ -48,14 +48,14 @@
 <div id="status">ESC liberou o cursor — clique no jogo para capturar novamente.</div>
 <div id="start"><div class="box">
   <h2>Puzzle Suffers</h2>
-  <p>O cursor será capturado e ficará no centro da tela.<br>Mouse para olhar, clique esquerdo para atirar.<br>Encontre e destrua o Enemy Spawner para abrir o portal.</p>
+  <p>O cursor será capturado e ficará no centro da tela.<br>Mouse para olhar, clique esquerdo para atirar.<br>Encontre e destrua o Enemy Spawner para abrir o portal.</p><p class="small" id="onlineRecordStart">🏆 Recorde: carregando…</p>
   <button id="startBtn">Entrar no jogo</button>
 </div></div>
 <div id="message"><div class="box">
   <h1>Fim do labirinto</h1>
   <p>Parabéns, desenvolvedor. Você encontrou e destruiu o Enemy Spawner.</p>
   <p>O portal foi aberto. O próximo caminho fica para uma próxima versão.</p>
-  <div class="final">faz o pix</div>
+  <div class="final" id="finalScore">Pontuação: 0</div><p class="small" id="onlineRecord">🏆 Recorde: carregando…</p>
   <br><button id="restart">Jogar novamente</button>
 </div></div>
 <div id="mobile">
@@ -105,7 +105,7 @@
   const keys={};
 
   let locked=false,last=performance.now(),cw=innerWidth,ch=innerHeight;
-  let summonHP=5,won=false,shotCooldown=0,portalOpen=false,mouseHeld=false;
+  let summonHP=5,won=false,shotCooldown=0,portalOpen=false,mouseHeld=false,score=0;
   let focal=800;
 
   // Dash
@@ -240,7 +240,7 @@
         for(const e of enemies){
           if(!e.alive)continue;
           if(Math.hypot(e.x-b.x,e.y-b.y)<ENEMY_R && b.z>=e.z && b.z<=e.z+ENEMY_H){
-            e.alive=false;
+            e.alive=false; score+=100;
             b.life=0;
             break;
           }
@@ -475,7 +475,7 @@
       enemyUpdate(dt);
 
       if(portalOpen && Math.hypot(p.x-portal.x,p.y-portal.y)<.6){
-        won=true;
+        won=true; score+=500; document.getElementById('finalScore').textContent=`Pontuação: ${score}`; window.dispatchEvent(new CustomEvent('rakino:game-score',{detail:{gameId:'puzzle-suffers',score}}));
         end.style.display='grid';
         if(document.pointerLockElement)
           document.exitPointerLock?.();
@@ -491,6 +491,7 @@
   }
 
   startBtn.onclick=()=>{
+    score=0; won=false; summonHP=5; portalOpen=false; enemies.forEach(e=>e.alive=true); document.getElementById('finalScore').textContent='Pontuação: 0'; end.style.display='none';
     start.style.display='none';
 
     if(matchMedia('(pointer:coarse)').matches){
@@ -649,5 +650,6 @@
   requestAnimationFrame(update);
 })();
 </script>
+<script type="module">import {mountGameRecord} from '../../assets/js/records.js';mountGameRecord({gameId:'puzzle-suffers',target:'#onlineRecord'});mountGameRecord({gameId:'puzzle-suffers',target:'#onlineRecordStart'});</script>
 </body>
 </html>

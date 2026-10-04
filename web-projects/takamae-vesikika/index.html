@@ -156,7 +156,7 @@ html.embed-preview .rakino-home,body.embed .rakino-home{display:none!important}
   <div id="over" class="overlay hidden"><section class="panel">
     <h1>💥 Game over</h1>
     <p style="margin:0">Pontuação total <span id="newBest" class="tag-new hidden">Novo recorde!</span></p>
-    <div class="over-score" id="fScore">0</div>
+    <div class="over-score" id="fScore">0</div><p class="small" id="onlineRecord">🏆 Recorde: carregando…</p>
     <div class="stat-grid">
       <div>Pontos especiais<b id="fSpecial">0</b></div>
       <div>Asteroides destruídos<b id="fKills">0</b></div>
@@ -471,6 +471,7 @@ function gameOver() {
   burst(p, 0xff7a18, 90, 40, 2.6, 1.5, false); burst(p, 0xffffff, 40, 60, 1.4, .8, false); burst(p, 0xef4444, 50, 28, 2.2, 1.2, false);
   ring(p, 0xff7a18, 16, .9, false); ring(p, 0xffffff, 9, .5, false);
   player.visible = false; flash('#ff3b30', 1); state.shake = 1.6;
+  window.dispatchEvent(new CustomEvent('rakino:game-score',{detail:{gameId:'takamae-vesikika',score:state.score}}));
   const isNew = state.score > state.best && state.score > 0; state.best = Math.max(state.best, state.score);
   try { localStorage.setItem('takamae-best', state.best) } catch {}
   const t = Math.floor(state.elapsed);
@@ -736,4 +737,4 @@ async function loadModels() {
 reset(); setWeapon(0, true); moveCross(); hud();
 requestAnimationFrame(loop);
 loadModels();
-</script></body></html>
+</script><script type="module">import {mountGameRecord} from '../../assets/js/records.js';mountGameRecord({gameId:'takamae-vesikika',target:'#onlineRecord'});</script></body></html>

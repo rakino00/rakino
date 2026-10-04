@@ -63,6 +63,27 @@ service cloud.firestore {
         && request.auth.token.email == 'rakifernn@gmail.com';
     }
 
+    // Recordes públicos dos jogos. O maior score vence; a interface só envia
+    // scores do próprio usuário autenticado.
+    match /gameRecords/{gameId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.score is int
+        && request.resource.data.score >= 0
+        && request.resource.data.score <= 100000000
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 120;
+      allow update: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.score is int
+        && request.resource.data.score > resource.data.score
+        && request.resource.data.score <= 100000000
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 120;
+      allow delete: if false;
+    }
+
     // Recorde do Saltador: leitura pública; atualização por usuário autenticado.
     // Visitantes não autenticados mantêm o recorde localmente neste navegador.
     match /saltador/{recordId} {
