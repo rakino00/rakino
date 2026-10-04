@@ -14,32 +14,39 @@ let F = null;   // módulo firebase-firestore
 let auth = null;
 let db = null;
 let ready = false;
+let initPromise = null;
 
 export const isConfigured = () => !!cfg && !!cfg.apiKey && !String(cfg.apiKey).startsWith('COLE');
 export const isReady = () => ready;
 export const ctx = () => ({ db, fs: F });
 
 export async function init() {
+  if (ready) return true;
   if (!isConfigured()) return false;
-  try {
-    const [appM, authM, fsM] = await Promise.all([
-      import(CDN + 'firebase-app.js'),
-      import(CDN + 'firebase-auth.js'),
-      import(CDN + 'firebase-firestore.js'),
-    ]);
-    A = authM; F = fsM;
-    const app = appM.initializeApp(cfg);
-    auth = A.getAuth(app);
-    // Cache offline: notations continuam funcionando sem internet e sincronizam depois.
-    db = F.initializeFirestore(app, {
-      localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }),
-    });
-    ready = true;
-    return true;
-  } catch (err) {
-    console.warn('[Rakino] Firebase indisponível:', err);
-    return false;
-  }
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    try {
+      const [appM, authM, fsM] = await Promise.all([
+        import(CDN + 'firebase-app.js'),
+        import(CDN + 'firebase-auth.js'),
+        import(CDN + 'firebase-firestore.js'),
+      ]);
+      A = authM; F = fsM;
+      const app = appM.getApps?.().length ? appM.getApp() : appM.initializeApp(cfg);
+      auth = A.getAuth(app);
+      db = F.initializeFirestore(app, {
+        localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }),
+      });
+      ready = true;
+      return true;
+    } catch (err) {
+      console.warn('[Rakino] Firebase indisponível:', err);
+      return false;
+    } finally {
+      initPromise = null;
+    }
+  })();
+  return initPromise;
 }
 
 /** Chama cb(user|null) sempre que o login mudar. */

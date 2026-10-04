@@ -60,16 +60,17 @@
     "file": "web-projects/rakino-race/index.html",
     "type": "html",
     "title": "destruRace",
-    "description": "Corrida com adversários ferozes, destrua-os.",
+    "description": "Corrida de limpeza com curvas, lixo na pista e projéteis para remover obstáculos.",
     "creator": "",
     "creators": [
       "Rakino"
     ],
-    "icon": "🚘",
+    "icon": "♻️",
     "tags": [
       "jogo",
       "carro",
-      "batalha"
+      "limpeza",
+      "curvas"
     ],
     "order": 4,
     "updated": ""

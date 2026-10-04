@@ -2,7 +2,7 @@
 id: rakino-race
 order: 4
 title: destruRace
-description: Corrida com adversários ferozes, destrua-os.
+description: Corrida de limpeza com curvas, lixo na pista e projéteis para remover obstáculos.
 creators:
   - Rakino
 icon: 🚘
@@ -10,8 +10,9 @@ type: html
 tags:
   - jogo
   - carro
-  - batalha
+  - limpeza
+  - curvas
 entry: index.html
 status: protótipo
 ---
-Corrida com adversários ferozes, destrua-os.
+Limpe a pista sem perder o controle: tempo e lixo removido valem pontos.

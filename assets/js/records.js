@@ -11,6 +11,7 @@ const cleanGameId = id => String(id || '').toLowerCase().replace(/[^a-z0-9_-]/g,
 
 export async function getRecord(gameId) {
   const id = cleanGameId(gameId);
+  if (!Auth.isReady() && Auth.isConfigured()) { try { await Auth.init(); } catch {} }
   const { db, fs } = Auth.ctx();
   if (!db || !fs) return { score: 0, name: fallbackName };
   try {
@@ -37,6 +38,7 @@ async function waitForAuthReady(timeout = 8000) {
 }
 
 export async function submitRecord(gameId, score) {
+  if (!Auth.isReady() && Auth.isConfigured()) { try { await Auth.init(); } catch {} }
   const value = Math.floor(Number(score) || 0);
   if (value <= 0) return false;
   const user = await waitForAuthReady();
@@ -64,7 +66,10 @@ export function mountGameRecord({ gameId, target, suffix = '' }) {
   const el = typeof target === 'string' ? document.querySelector(target) : target;
   if (!el) return () => {};
   const paint = r => { el.textContent = r.score > 0 ? `${r.score}${suffix ? ` ${suffix}` : ''} — ${r.name}` : `Ainda não há recorde${suffix ? ` (${suffix})` : ''}`; };
-  waitForAuthReady().then(() => getRecord(gameId)).then(paint);
+  (async () => {
+    if (!Auth.isReady() && Auth.isConfigured()) { try { await Auth.init(); } catch {} }
+    paint(await getRecord(gameId));
+  })();
   const onScore = async e => {
     if (e.detail?.gameId !== gameId) return;
     await submitRecord(gameId, e.detail.score);

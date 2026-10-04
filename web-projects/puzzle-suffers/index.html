@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>puzzle suffers — protótipo isolado</title>
+<title>Puzzle Suffers — Rakino</title>
 <style>
   :root{font-family:system-ui,Segoe UI,sans-serif;color:#eaf8f3;background:#05080b}
   *{box-sizing:border-box}
@@ -34,9 +34,15 @@
   #mobile .dash{position:absolute;right:164px;bottom:32px;width:54px;height:54px;border-radius:50%;pointer-events:auto}
   #mobile .exit{position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;padding:0;background:#07100fdd;pointer-events:auto}
   @media(pointer:coarse){#mobile{display:block}#hud{font-size:11px}}
+
+  .rakino-home{position:fixed;left:14px;top:12px;z-index:9999;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid #28443d;border-radius:999px;background:#07100ee8;color:#eaf8f3;text-decoration:none;font:700 12px/1 system-ui,sans-serif;backdrop-filter:blur(12px)}
+  .rakino-home:hover{border-color:#54e0b7;color:#fff}
+  .exit-game{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:11px;border:1px solid #36504a;background:#0a1715;color:#eaf8f3;text-decoration:none;font-weight:700}
+  .exit-game:hover{border-color:#54e0b7}
 </style>
 </head>
 <body>
+<a class="rakino-home" href="../../index.html#/web" aria-label="Voltar para Web Projects">← Voltar</a>
 <canvas id="game"></canvas>
 <div id="crosshair"><i></i><b></b></div>
 <div id="hud">
@@ -56,7 +62,7 @@
   <p>Parabéns, desenvolvedor. Você encontrou e destruiu o Enemy Spawner.</p>
   <p>O portal foi aberto. O próximo caminho fica para uma próxima versão.</p>
   <div class="final" id="finalScore">Pontuação: 0</div><p class="small" id="onlineRecord">🏆 Recorde: carregando…</p>
-  <br><button id="restart">Jogar novamente</button>
+  <br><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px"><button id="restart">↻ Jogar novamente</button><a class="exit-game" href="../../index.html#/web">Sair do jogo</a></div>
 </div></div>
 <div id="mobile">
   <div class="look" id="look"></div>
@@ -64,7 +70,7 @@
   <button class="dash" id="mdash">»</button>
   <button class="jump" id="mjump">↑</button>
   <button class="fire" id="mfire">●</button>
-  <button class="exit" id="mexit">×</button>
+  <a class="exit" id="mexit" href="../../index.html#/web" aria-label="Sair do jogo">×</a>
 </div>
 
 <script>
@@ -572,10 +578,7 @@
 
   document.getElementById('restart').onclick=()=>location.reload();
 
-  document.getElementById('mexit').onclick=()=>{
-    locked=false;
-    start.style.display='grid';
-  };
+  document.getElementById('mexit').onclick=()=>{ locked=false; if(document.pointerLockElement) document.exitPointerLock?.(); };
 
   document.getElementById('mfire').onclick=shoot;
   document.getElementById('mjump').onclick=jump;

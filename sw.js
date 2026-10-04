@@ -1,7 +1,7 @@
 /* sw.js — deixa o site instalável (PWA) e abrindo offline.
    Estratégia: rede primeiro (alterações publicadas aparecem na hora); o cache é só fallback offline.
    Firebase/Google e outros domínios nunca passam por aqui. */
-const CACHE = 'rakino-v15';   // ← aumente (v15, v16…) para forçar limpeza total do cache
+const CACHE = 'rakino-v16';   // ← aumente (v15, v16…) para forçar limpeza total do cache
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'data/web-projects.json',
   'assets/css/style.css', 'assets/img/icon.svg', 'assets/img/logo.png',

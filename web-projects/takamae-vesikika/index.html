@@ -98,8 +98,10 @@ html.embed-preview .rakino-home,body.embed .rakino-home{display:none!important}
   .right-col{min-width:130px}
 }
 @media(prefers-reduced-motion:reduce){.crosshair svg{animation:none}}
+
+.exit-game{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(8,14,22,.78);color:#eafaff;text-decoration:none;font-weight:800}.exit-game:hover{border-color:#67e8f9;color:#fff}
 </style><script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-preview');</script></head><body><script>if(new URLSearchParams(location.search).get('embed')==='1')document.body.classList.add('embed');</script>
-<a class="rakino-home" href="../../index.html#/home" aria-label="Voltar ao início">← Início</a>
+<a class="rakino-home" href="../../index.html#/web" aria-label="Voltar para Web Projects">← Voltar</a>
 
 <div id="game">
   <div class="hud">
@@ -163,7 +165,7 @@ html.embed-preview .rakino-home,body.embed .rakino-home{display:none!important}
       <div>Tempo de voo<b id="fTime">0:00</b></div>
       <div>Recorde<b id="fBest">0</b></div>
     </div>
-    <button id="again" class="btn primary">↻ Jogar novamente</button>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px"><button id="again" class="btn primary">↻ Jogar novamente</button><a class="exit-game" href="../../index.html#/web">Sair do jogo</a></div>
   </section></div>
 </div>
 
