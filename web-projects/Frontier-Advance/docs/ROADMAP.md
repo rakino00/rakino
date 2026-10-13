@@ -1,0 +1,1 @@
+1. Integrar modelos GLB com GLTFLoader e animações.\n2. Ajustar IA/rotas e balanceamento.\n3. Implementar recordes globais via backend.\n4. Planejar multiplayer com servidor autoritativo, salas e sincronização.\n5. Otimizar desempenho mobile.

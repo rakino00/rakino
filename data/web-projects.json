@@ -1,117 +1,82 @@
 [
   {
-    "id": "acorde-plus",
-    "file": "web-projects/acorde-plus/index.html",
+    "id": "frontier-advance",
+    "file": "web-projects/frontier-advance.html",
     "type": "html",
-    "title": "acordePlus",
-    "description": "App para treino de acordes, escalas...",
-    "creator": "",
-    "creators": [
-      "Rakino"
+    "title": "Frontier Advance — Tower Advance",
+    "description": "Defenda sua torre em batalhas 3D contra hordas progressivas, escolha sua classe e dispute o ranking de recordes.",
+    "icon": "🏹",
+    "tags": [
+      "jogo",
+      "3D",
+      "ação",
+      "tower defense"
     ],
+    "order": 25
+  },
+  {
+    "id": "acordeplus",
+    "file": "web-projects/acordePlus.html",
+    "type": "html",
+    "title": "Círculo das Quintas",
+    "description": "Roda interativa das tonalidades com diagramas de acordes para violão.",
     "icon": "🎸",
     "tags": [
-      "treino",
-      "música"
-    ],
-    "order": 1,
-    "updated": ""
-  },
-  {
-    "id": "minha-vida",
-    "file": "web-projects/minha-vida/index.html",
-    "type": "html",
-    "title": "Minha Vida",
-    "description": "Currículo vivo em um pergaminho horizontal com memórias, experiências, fotos e uma linha do tempo por ano.",
-    "creator": "Rakino",
-    "creators": [],
-    "icon": "📜",
-    "tags": [
-      "currículo",
-      "biografia",
-      "timeline",
-      "pessoal",
+      "música",
       "SVG"
-    ],
-    "order": 2,
-    "updated": ""
+    ]
   },
   {
-    "id": "rakino-food",
-    "file": "web-projects/rakino-food/index.html",
+    "id": "rakinofood",
+    "file": "web-projects/RakinoFood.html",
     "type": "html",
-    "title": "RakinoFood",
-    "description": "Sistema de organização para pequenas empresas de fastfood",
-    "creator": "",
-    "creators": [
-      "Rakino"
-    ],
-    "icon": "📈",
+    "title": "RakinoFood — Gestão de Pedidos",
+    "description": "Protótipo de gestão para restaurante: Salão, Cozinha, Escritório, cardápio, pedidos, compras e balanço.",
+    "icon": "🍽️",
     "tags": [
-      "sistema",
-      "gestao",
-      "banco de dados"
-    ],
-    "order": 3,
-    "updated": ""
+      "restaurante",
+      "pedidos",
+      "gestão",
+      "financeiro"
+    ]
   },
   {
     "id": "rakino-race",
-    "file": "web-projects/rakino-race/index.html",
+    "file": "web-projects/rakino-race.html",
     "type": "html",
-    "title": "destruRace",
-    "description": "Corrida de limpeza com curvas, lixo na pista e projéteis para remover obstáculos.",
-    "creator": "",
-    "creators": [
-      "Rakino"
-    ],
-    "icon": "♻️",
+    "title": "Rakino Race",
+    "description": "Corrida com pista contínua, aceleração, frenagem, ré, direção lateral e disparos que destroem carros rivais.",
+    "icon": "🏁",
     "tags": [
       "jogo",
-      "carro",
-      "limpeza",
-      "curvas"
-    ],
-    "order": 4,
-    "updated": ""
+      "corrida"
+    ]
   },
   {
     "id": "takamae-vesikika",
-    "file": "web-projects/takamae-vesikika/index.html",
+    "file": "web-projects/takamae-vesikika.html",
     "type": "html",
     "title": "Takamae Vesikika",
-    "description": "Releitura de space invaders.",
-    "creator": "",
-    "creators": [
-      "Rakino"
-    ],
-    "icon": "🛸",
+    "description": "Voo espacial 3D com direção livre, asteroides destrutíveis e controle contínuo de velocidade.",
+    "icon": "☄️",
     "tags": [
       "jogo",
       "espaço",
-      "nave",
-      "batalha"
-    ],
-    "order": 5,
-    "updated": ""
+      "3D",
+      "ação"
+    ]
   },
   {
     "id": "puzzle-suffers",
-    "file": "web-projects/puzzle-suffers/index.html",
+    "file": "web-projects/puzzle-suffers.html",
     "type": "html",
     "title": "puzzle suffers",
-    "description": "Jogo de treino de mira",
-    "creator": "",
-    "creators": [
-      "Rakino"
-    ],
-    "icon": "🎮",
+    "description": "Labirinto 3D com WASD, colisão sólida nas paredes e inimigos, câmera orbital protegida e Summon Enemy.",
+    "icon": "🎯",
     "tags": [
       "jogo",
-      "tiro",
-      "labirinto"
-    ],
-    "order": 6,
-    "updated": ""
+      "labirinto",
+      "mira"
+    ]
   }
 ]
