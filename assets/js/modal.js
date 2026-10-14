@@ -4,7 +4,7 @@
  * Comportamento:
  *  - clicar FORA da janela fecha;  Esc fecha;  botão [data-close] fecha;
  *  - o botão "voltar" do celular fecha o modal (usamos history.pushState);
- *  - quando `hash` é informado, a URL muda (#/web/acordePlus) e vira link direto.
+ *  - quando `hash` é informado, a URL muda (#/web/<id>) e vira link direto.
  *
  * BUG ANTIGO (blur na tela toda): .modal-root tinha display:flex, o que anula o
  * atributo `hidden`. Agora o CSS tem [hidden]{display:none!important} e o modal
@@ -37,6 +37,7 @@ export function openModal(html, { cls = '', hash = null, closeUrl = null, onClos
     pushed = true;
   }
   state = { pushed, closeUrl, onClose };
+  window.dispatchEvent(new CustomEvent('rakino:pulse', { detail: { dir: 0 } }));   // o fundo interativo reage
   const focusable = root.querySelector('[data-autofocus]') || root.querySelector('[data-close]');
   focusable && focusable.focus({ preventScroll: true });
   return root;

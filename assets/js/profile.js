@@ -12,8 +12,13 @@ const DEFAULT_MODE = 'dark';
 // Só existem dois temas. Para mudar o tema inicial de quem nunca escolheu, troque DEFAULT_THEME.
 // Valores antigos salvos no navegador/Firestore ('forge', 'dragon') caem em DEFAULT_THEME.
 const THEMES = {
+<<<<<<< HEAD
   default: { label: 'Rakino Original', description: 'Visual limpo, sem animações de fundo.' },
   interactive: { label: 'Interativo', description: 'Fundo fluido que acompanha seu dedo, a rolagem e a navegação.' },
+=======
+  default: { label: 'Default', description: 'Visual limpo e discreto.' },
+  interactive: { label: 'Interativo', description: 'Fundo vivo e transições suaves ao navegar.' },
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f
 };
 let currentTheme = DEFAULT_THEME;
 

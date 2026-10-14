@@ -329,8 +329,31 @@ html[data-mode="light"] .python-editor{background:#1b2030;color:#f4f6fb}
 .theme-choice{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:12px;border:1px solid var(--border);background:var(--card-glass);border-radius:16px;color:var(--text);transition:.18s ease}
 .theme-choice:hover,.theme-choice.selected{border-color:var(--cyan);transform:translateY(-1px)}
 .theme-choice strong,.theme-choice small{display:block}.theme-choice small{color:var(--text-dim);margin-top:2px}
+<<<<<<< HEAD
 .profile-facts{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}.profile-facts span{font-size:.72rem;color:var(--text-dim);padding:5px 9px;border:1px solid var(--border);border-radius:999px}
 
+=======
+.theme-preview{position:relative;width:86px;height:56px;border-radius:12px;overflow:hidden;flex:0 0 auto;background:#080a0f;border:1px solid rgba(255,255,255,.12)}
+.theme-preview i,.theme-preview b,.theme-preview em{position:absolute;display:block;border-radius:50%}
+.theme-preview i{width:70px;height:70px;right:-20px;top:-25px;background:#a855f7;filter:blur(12px)}
+.theme-preview b{width:55px;height:55px;left:-18px;bottom:-25px;background:#00f0ff;filter:blur(10px)}
+.theme-preview em{left:12px;bottom:9px;width:48px;height:4px;border-radius:4px;background:linear-gradient(90deg,#00f0ff,#a855f7)}
+.profile-facts{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}.profile-facts span{font-size:.72rem;color:var(--text-dim);padding:5px 9px;border:1px solid var(--border);border-radius:999px}
+
+/* Tema interativo: atmosfera neutra, sem identidade temática específica */
+html[data-rakino-theme="interactive"] body{--bg:#080d18;--card:#101827;--card-glass:rgba(12,20,35,.88);--border:rgba(160,174,198,.16);--text:#edf1fa;--text-dim:#a0abc0;--cyan:#aebbd0;--purple:#77849e;--pink:#a6aebe;--amber:#c0c8d5;--green:#91a99a;--grad:linear-gradient(100deg,#aebbd0,#66758f);background-color:#080d18}
+html[data-rakino-theme="interactive"] body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.24;background-image:radial-gradient(circle at 8% 12%,rgba(210,220,238,.48) 0 1px,transparent 1.5px),radial-gradient(circle at 27% 38%,rgba(190,202,224,.3) 0 .8px,transparent 1.4px),radial-gradient(circle at 46% 17%,rgba(220,228,242,.35) 0 1px,transparent 1.6px),radial-gradient(circle at 68% 31%,rgba(190,202,224,.28) 0 .8px,transparent 1.4px),radial-gradient(circle at 88% 13%,rgba(220,228,242,.38) 0 1px,transparent 1.6px),radial-gradient(circle at 17% 78%,rgba(190,202,224,.28) 0 .8px,transparent 1.4px),radial-gradient(circle at 58% 72%,rgba(220,228,242,.3) 0 1px,transparent 1.5px),radial-gradient(circle at 83% 86%,rgba(190,202,224,.3) 0 .8px,transparent 1.4px);background-size:310px 260px,370px 330px,430px 390px,510px 420px,590px 470px,460px 390px,620px 510px,710px 570px}
+html[data-rakino-theme="interactive"] #app,html[data-rakino-theme="interactive"] .topbar,html[data-rakino-theme="interactive"] .dock{position:relative;z-index:1}
+html[data-rakino-theme="interactive"] .topbar{background:rgba(8,13,24,.82);border-bottom-color:rgba(160,174,198,.16);backdrop-filter:blur(18px)}
+html[data-rakino-theme="interactive"] .dock{background:rgba(8,13,24,.88);border-color:rgba(160,174,198,.2);box-shadow:0 12px 36px rgba(0,0,0,.28);backdrop-filter:blur(18px)}
+html[data-rakino-theme="interactive"] .dock-item.active{background:rgba(174,187,208,.12);color:#dce5f2}
+html[data-rakino-theme="interactive"] .card:hover{border-color:rgba(174,187,208,.48)}
+html[data-rakino-theme="interactive"] .section-title .accent{color:#c0c8d5}
+html[data-theme="light"][data-rakino-theme="interactive"] body{--bg:#f2f4f8;--card:#fff;--card-glass:rgba(255,255,255,.92);--border:rgba(40,55,75,.14);--text:#202a38;--text-dim:#637083;background-color:#f2f4f8}
+html[data-theme="light"][data-rakino-theme="interactive"] .topbar{background:rgba(246,248,251,.88);border-bottom-color:rgba(40,55,75,.12)}
+html[data-theme="light"][data-rakino-theme="interactive"] .dock{background:rgba(255,255,255,.9);box-shadow:0 10px 30px rgba(40,55,75,.12)}
+
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f
 /* ---------- chat ---------- */
 .chat-bubble{position:fixed;right:18px;bottom:calc(var(--dock-h) + 22px + var(--sab));z-index:70;display:flex;align-items:center;gap:8px;min-height:48px;padding:0 15px 0 8px;border:1px solid rgba(34,211,238,.25);border-radius:999px;background:rgba(10,17,26,.96);color:var(--text);box-shadow:0 14px 40px rgba(0,0,0,.42);backdrop-filter:blur(14px);font-weight:700}
 .chat-bubble:hover{border-color:var(--cyan);transform:translateY(-2px)}
@@ -374,6 +397,7 @@ body.no-scroll #chatBubbleRoot{display:none!important;}
 .login-logo,.logo{display:inline-flex;align-items:center;gap:8px}.login-logo img{width:44px;height:44px;object-fit:contain}.logo img{width:30px;height:30px;object-fit:contain}.logo span{font-weight:800}
 @media(max-width:640px){.fab{right:calc(16px + var(--sar));bottom:calc(var(--dock-h) + 88px + var(--sab));}.chat-bubble{right:12px}.card-record{font-size:.68rem}}
 
+<<<<<<< HEAD
 /* ==========================================================================
    Tema "interactive" — fundo vivo (assets/js/background.js) + transições de navegação.
    Só existem dois temas: "default" (sem nada aqui) e este. Tudo do tema fica neste bloco.
@@ -407,3 +431,56 @@ html[data-rakino-theme="interactive"] .dock-item.active{transform:translateY(-3p
 .theme-preview.interactive i{animation:previewDrift 6s ease-in-out infinite alternate}
 .theme-preview.interactive b{animation:previewDrift 7.5s ease-in-out infinite alternate-reverse}
 @keyframes previewDrift{to{transform:translate(16px,10px) scale(1.15)}}
+=======
+/* Atmosfera interativa: movimento sutil, sem competir com o conteúdo */
+html[data-rakino-theme="interactive"] body {
+  background-color: #080d18;
+  background-image:
+    radial-gradient(ellipse at 12% 8%, rgba(95,120,160,.12), transparent 42%),
+    radial-gradient(ellipse at 88% 32%, rgba(85,105,140,.10), transparent 44%),
+    radial-gradient(ellipse at 48% 100%, rgba(120,130,150,.07), transparent 48%);
+  background-size: 140% 140%;
+  animation: rakinoAtmosphere 28s ease-in-out infinite alternate;
+}
+html[data-rakino-theme="interactive"] #main > * {
+  animation: rakinoPageEnter .42s cubic-bezier(.2,.7,.2,1) both;
+}
+html[data-rakino-theme="interactive"] .card,
+html[data-rakino-theme="interactive"] .dock,
+html[data-rakino-theme="interactive"] .topbar,
+html[data-rakino-theme="interactive"] .modal-box {
+  transition: background-color .28s ease, border-color .28s ease, box-shadow .28s ease, transform .28s ease;
+}
+@keyframes rakinoAtmosphere {
+  from { background-position: 0% 0%; }
+  to { background-position: 100% 80%; }
+}
+@keyframes rakinoPageEnter {
+  from { opacity: .72; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.theme-preview.interactive { background:#080d18; }
+.theme-preview.interactive i { background:#91a5c4; }
+.theme-preview.interactive b { background:#64748b; }
+.theme-preview.interactive em { background:linear-gradient(90deg,#91a5c4,#64748b); }
+@media (prefers-reduced-motion: reduce) {
+  html[data-rakino-theme="interactive"] body,
+  html[data-rakino-theme="interactive"] #main > * { animation:none; }
+  html[data-rakino-theme="interactive"] .card,
+  html[data-rakino-theme="interactive"] .dock,
+  html[data-rakino-theme="interactive"] .topbar,
+  html[data-rakino-theme="interactive"] .modal-box { transition:none; }
+}
+/* Resguardo mobile para conteúdo e controles do próprio site */
+@media (max-width: 640px) {
+  #main { min-width:0; overflow-wrap:anywhere; }
+  .modal-root { padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom)); }
+  .modal-box { max-width:100%; max-height:calc(100dvh - 20px); overflow:auto; }
+  button, .btn, .chip-btn { touch-action:manipulation; }
+}
+
+.theme-preview.default { background:#080a0f; }
+.theme-preview.default i { background:#64748b; }
+.theme-preview.default b { background:#94a3b8; }
+.theme-preview.default em { background:linear-gradient(90deg,#64748b,#94a3b8); }
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f

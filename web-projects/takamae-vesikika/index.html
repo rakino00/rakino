@@ -2,7 +2,7 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:#020817;color:#fff;font-family:system-ui,"Segoe UI",Arial,sans-serif;-webkit-user-select:none;user-select:none}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020817;color:#fff;font-family:system-ui,"Segoe UI",Arial,sans-serif;-webkit-user-select:none;user-select:none}
 #game{height:100%;position:relative;touch-action:none;--wc:#38bdf8}
 #game.playing{cursor:none}
 canvas{display:block;width:100%;height:100%}
@@ -63,8 +63,14 @@ canvas{display:block;width:100%;height:100%}
 .stick{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px;border-radius:50%;background:#22d3ee55;border:1px solid #67e8f9}
 .tbtn{position:absolute;border:1px solid #fff4;color:#fff;font-weight:800;pointer-events:auto;touch-action:none;font-family:inherit}
 .hyper-btn{left:180px;bottom:40px;width:78px;height:50px;border-radius:16px;background:#7c3aedcc;font-size:12px}
+<<<<<<< HEAD
 .spd{bottom:calc(18px + env(safe-area-inset-bottom,0px));width:50px;height:46px;border-radius:14px;background:#0f172a99;font-size:22px}
 #spdUp{right:calc(14px + env(safe-area-inset-right,0px))}#spdDown{right:calc(72px + env(safe-area-inset-right,0px))}
+=======
+.fire-mobile{display:none!important}
+.spd{right:30px;width:50px;height:46px;border-radius:14px;background:#0f172acc;font-size:22px}
+#spdUp{bottom:116px}#spdDown{bottom:168px}
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f
 
 /* ---------- telas ---------- */
 .overlay{position:absolute;inset:0;background:#02040ad0;display:grid;place-items:center;padding:18px;z-index:10;cursor:default}
@@ -86,6 +92,7 @@ canvas{display:block;width:100%;height:100%}
 @media(max-width:700px),(pointer:coarse){
   .help{display:none}
   .touch{display:block}
+<<<<<<< HEAD
   /* armas: coluna vertical colada na lateral direita, translúcida para não tapar a visão */
   .weapons{left:auto;right:calc(6px + env(safe-area-inset-right,0px));top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:6px}
   .slot{width:46px;padding:6px 2px 4px;border-radius:12px;background:#07101d55;border-color:#ffffff1a;backdrop-filter:none;opacity:.45;transition:opacity .18s,transform .18s,box-shadow .18s,border-color .18s}
@@ -94,6 +101,11 @@ canvas{display:block;width:100%;height:100%}
   .slot em{font-size:9px}
   .slot.active{opacity:.9;transform:translateX(-5px) scale(1.06);box-shadow:0 0 14px var(--c),inset 0 0 10px color-mix(in srgb,var(--c) 30%,transparent)}
   .slot.pop{animation:slotPopM .38s}
+=======
+  .weapons{left:auto;right:max(8px, env(safe-area-inset-right));top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:7px;padding:7px;border:1px solid #ffffff22;border-radius:16px;background:#07101d66;backdrop-filter:blur(7px);opacity:.78}
+  .slot{width:54px;padding:6px 3px 5px;background:#07101d99;border-radius:11px}
+  .slot svg{width:24px;height:24px}
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f
   .big{font-size:26px}
   .score-box{min-width:150px}
   .right-col{min-width:130px}
@@ -163,7 +175,7 @@ canvas{display:block;width:100%;height:100%}
 
   <div id="menu" class="overlay"><section class="panel">
     <h1>☄️ Takamae Vesikika</h1>
-    <p>Voe por um céu infinito, troque de arma em pleno voo e destrua asteroides. Acertar um asteroide da <b>mesma cor</b> da sua munição vale <b>Ponto Especial</b>.</p>
+    <p>Voe por um céu infinito, troque de arma em pleno voo e destrua asteroides. No celular, arraste a metade direita para mirar e atirar automaticamente. Acertar um asteroide da <b>mesma cor</b> da sua munição vale <b>Ponto Especial</b>.</p>
     <div class="legend">
       <div><span class="dot" style="background:#38bdf8"></span>Esfera azul · asteroide azul</div>
       <div><span class="dot" style="background:#facc15"></span>Triângulo amarelo · asteroide amarelo</div>
@@ -557,13 +569,27 @@ addEventListener('pointercancel', e => { if (e.pointerType === 'mouse') state.fi
 /* toque: mira por arrasto na metade direita */
 let aimTouch = null, lax = 0, lay = 0;
 const aimZone = $('#aimZone');
+<<<<<<< HEAD
 /* mobile: tiro automático enquanto o dedo estiver mirando */
 aimZone.addEventListener('pointerdown', e => { aimTouch = e.pointerId; lax = e.clientX; lay = e.clientY; aimZone.setPointerCapture(e.pointerId); if (state.mode === 'play') { state.firing = true; shoot() } });
+=======
+aimZone.addEventListener('pointerdown', e => {
+  aimTouch = e.pointerId; lax = e.clientX; lay = e.clientY;
+  aimZone.setPointerCapture(e.pointerId);
+  state.firing = true; shoot();
+});
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f
 aimZone.addEventListener('pointermove', e => {
   if (e.pointerId !== aimTouch) return;
   aim.x = clamp(aim.x + (e.clientX - lax) * 1.4, 0, innerWidth); aim.y = clamp(aim.y + (e.clientY - lay) * 1.4, 0, innerHeight); lax = e.clientX; lay = e.clientY; moveCross();
 });
+<<<<<<< HEAD
 ['pointerup', 'pointercancel'].forEach(ev => aimZone.addEventListener(ev, e => { if (e.pointerId !== aimTouch) return; aimTouch = null; state.firing = false }));
+=======
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => aimZone.addEventListener(ev, () => {
+  aimTouch = null; state.firing = false;
+}));
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f
 
 let padTouch = null;
 const pad = $('#movePad'), stick = $('#stick');
@@ -579,6 +605,10 @@ pad.addEventListener('pointermove', e => { if (e.pointerId === padTouch) updateP
   if (e.pointerId === padTouch) { padTouch = null; ['left', 'right', 'up', 'down'].forEach(k => setKey(k, false)); stick.style.transform = 'translate(0,0)' }
 }));
 const hold = (id, down, up) => { const b = $(id); b.addEventListener('pointerdown', e => { e.preventDefault(); down() }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, up)) };
+<<<<<<< HEAD
+=======
+
+>>>>>>> c660410be9dfc8c04d90e0dccf5808f032c8c57f
 hold('#hyperBtn', hyperJump, () => {});
 hold('#spdUp', () => setKey('faster', true), () => setKey('faster', false));
 hold('#spdDown', () => setKey('slower', true), () => setKey('slower', false));
