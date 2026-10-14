@@ -5,13 +5,15 @@
 import * as Auth from './auth.js';
 import { esc, toast } from './ui.js';
 import { openModal, hideModal } from './modal.js';
+import { setBackground } from './background.js';
 
-const DEFAULT_THEME = 'forge';
+const DEFAULT_THEME = 'default';
 const DEFAULT_MODE = 'dark';
+// Só existem dois temas. Para mudar o tema inicial de quem nunca escolheu, troque DEFAULT_THEME.
+// Valores antigos salvos no navegador/Firestore ('forge', 'dragon') caem em DEFAULT_THEME.
 const THEMES = {
-  default: { label: 'Rakino Original', description: '' },
-  forge: { label: 'Dream Forge', description: '' },
-  dragon: { label: 'Red Dragon Scale', description: '' },
+  default: { label: 'Rakino Original', description: 'Visual limpo, sem animações de fundo.' },
+  interactive: { label: 'Interativo', description: 'Fundo fluido que acompanha seu dedo, a rolagem e a navegação.' },
 };
 let currentTheme = DEFAULT_THEME;
 
@@ -19,6 +21,7 @@ function applyTheme(theme = DEFAULT_THEME) {
   currentTheme = THEMES[theme] ? theme : DEFAULT_THEME;
   document.documentElement.dataset.rakinoTheme = currentTheme;
   localStorage.setItem('rakino_visual_theme', currentTheme);
+  setBackground(currentTheme === 'interactive');
 }
 
 export function getTheme() { return currentTheme; }
@@ -30,8 +33,9 @@ export function applySavedTheme() {
 
 function applyColorMode(mode = DEFAULT_MODE) {
   const value = mode === 'light' ? 'light' : 'dark';
-  document.documentElement.dataset.theme = value;
+  document.documentElement.dataset.mode = value;
   localStorage.setItem('rakino_color_mode', value);
+  window.dispatchEvent(new CustomEvent('rakino:mode'));
   const btn = document.getElementById('themeToggle');
   if (btn) { btn.textContent = value === 'light' ? '☀️' : '🌙'; btn.title = value === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'; }
 }
@@ -69,7 +73,7 @@ async function saveTheme(user, theme) {
       photoURL: user.photoURL || '',
       email: user.email || '',
       theme: currentTheme,
-      colorMode: document.documentElement.dataset.theme || DEFAULT_MODE,
+      colorMode: document.documentElement.dataset.mode || DEFAULT_MODE,
       updatedAt: fs.serverTimestamp(),
     }, { merge: true });
     toast('Tema salvo na sua conta.');

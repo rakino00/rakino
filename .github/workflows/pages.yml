@@ -54,7 +54,10 @@ jobs:
               if not isinstance(item, dict) or not item.get('id') or not item.get('file'):
                   raise SystemExit('ERRO: item do catálogo sem id/file')
 
-          print(f'OK: catálogo com {len(catalog)} projeto(s)')
+          missing = [i['file'] for i in catalog if not Path(i['file']).is_file()]
+          if missing:
+              raise SystemExit(f'ERRO: arquivos do catálogo não existem: {missing}')
+          print(f'OK: catálogo com {len(catalog)} projeto(s), todos os arquivos existem')
           PY
 
       - name: Montar artefato
