@@ -1,82 +1,136 @@
 [
   {
-    "id": "frontier-advance",
-    "file": "web-projects/frontier-advance.html",
+    "id": "acorde-plus",
+    "file": "web-projects/acorde-plus/index.html",
     "type": "html",
-    "title": "Frontier Advance — Tower Advance",
-    "description": "Defenda sua torre em batalhas 3D contra hordas progressivas, escolha sua classe e dispute o ranking de recordes.",
-    "icon": "🏹",
-    "tags": [
-      "jogo",
-      "3D",
-      "ação",
-      "tower defense"
+    "title": "acordePlus",
+    "description": "App para treino de acordes, escalas...",
+    "creator": "",
+    "creators": [
+      "Rakino"
     ],
-    "order": 25
-  },
-  {
-    "id": "acordeplus",
-    "file": "web-projects/acordePlus.html",
-    "type": "html",
-    "title": "Círculo das Quintas",
-    "description": "Roda interativa das tonalidades com diagramas de acordes para violão.",
     "icon": "🎸",
     "tags": [
-      "música",
-      "SVG"
-    ]
+      "treino",
+      "música"
+    ],
+    "order": 1,
+    "updated": ""
   },
   {
-    "id": "rakinofood",
-    "file": "web-projects/RakinoFood.html",
+    "id": "minha-vida",
+    "file": "web-projects/minha-vida/index.html",
     "type": "html",
-    "title": "RakinoFood — Gestão de Pedidos",
-    "description": "Protótipo de gestão para restaurante: Salão, Cozinha, Escritório, cardápio, pedidos, compras e balanço.",
-    "icon": "🍽️",
+    "title": "Minha Vida",
+    "description": "Currículo vivo em um pergaminho horizontal com memórias, experiências, fotos e uma linha do tempo por ano.",
+    "creator": "Rakino",
+    "creators": [],
+    "icon": "📜",
     "tags": [
-      "restaurante",
-      "pedidos",
-      "gestão",
-      "financeiro"
-    ]
+      "currículo",
+      "biografia",
+      "timeline",
+      "pessoal",
+      "SVG"
+    ],
+    "order": 2,
+    "updated": ""
+  },
+  {
+    "id": "rakino-food",
+    "file": "web-projects/rakino-food/index.html",
+    "type": "html",
+    "title": "RakinoFood",
+    "description": "Sistema de organização para pequenas empresas de fastfood",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "📈",
+    "tags": [
+      "sistema",
+      "gestao",
+      "banco de dados"
+    ],
+    "order": 3,
+    "updated": ""
   },
   {
     "id": "rakino-race",
-    "file": "web-projects/rakino-race.html",
+    "file": "web-projects/rakino-race/index.html",
     "type": "html",
-    "title": "Rakino Race",
-    "description": "Corrida com pista contínua, aceleração, frenagem, ré, direção lateral e disparos que destroem carros rivais.",
-    "icon": "🏁",
+    "title": "destruRace",
+    "description": "Corrida de limpeza com curvas, lixo na pista e projéteis para remover obstáculos.",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "🚘",
     "tags": [
       "jogo",
-      "corrida"
-    ]
+      "carro",
+      "limpeza",
+      "curvas"
+    ],
+    "order": 4,
+    "updated": ""
   },
   {
     "id": "takamae-vesikika",
-    "file": "web-projects/takamae-vesikika.html",
+    "file": "web-projects/takamae-vesikika/index.html",
     "type": "html",
     "title": "Takamae Vesikika",
-    "description": "Voo espacial 3D com direção livre, asteroides destrutíveis e controle contínuo de velocidade.",
-    "icon": "☄️",
+    "description": "Releitura de space invaders.",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "🛸",
     "tags": [
       "jogo",
       "espaço",
-      "3D",
-      "ação"
-    ]
+      "nave",
+      "batalha"
+    ],
+    "order": 5,
+    "updated": ""
   },
   {
     "id": "puzzle-suffers",
-    "file": "web-projects/puzzle-suffers.html",
+    "file": "web-projects/puzzle-suffers/index.html",
     "type": "html",
     "title": "puzzle suffers",
-    "description": "Labirinto 3D com WASD, colisão sólida nas paredes e inimigos, câmera orbital protegida e Summon Enemy.",
-    "icon": "🎯",
+    "description": "Jogo de treino de mira",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "🎮",
     "tags": [
       "jogo",
-      "labirinto",
-      "mira"
-    ]
+      "tiro",
+      "labirinto"
+    ],
+    "order": 6,
+    "updated": ""
+  },
+  {
+    "id": "frontier-advance",
+    "file": "web-projects/frontier-advance/index.html",
+    "type": "html",
+    "title": "Frontier-Advance",
+    "description": "Vamos testar a mira e a estratégia também",
+    "creator": "",
+    "creators": [
+      "Rakino"
+    ],
+    "icon": "🏯",
+    "tags": [
+      "jogo",
+      "tiro",
+      "torres"
+    ],
+    "order": 25,
+    "updated": ""
   }
 ]

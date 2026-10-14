@@ -1,6 +1,6 @@
 ---
-id: fontier-advance
-order: 1
+id: frontier-advance
+order: 25
 title: Frontier-Advance
 description: Vamos testar a mira e a estratégia também
 creators:
