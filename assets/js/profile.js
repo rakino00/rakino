@@ -6,12 +6,11 @@ import * as Auth from './auth.js';
 import { esc, toast } from './ui.js';
 import { openModal, hideModal } from './modal.js';
 
-const DEFAULT_THEME = 'forge';
+const DEFAULT_THEME = 'default';
 const DEFAULT_MODE = 'dark';
 const THEMES = {
-  default: { label: 'Rakino Original', description: '' },
-  forge: { label: 'Dream Forge', description: '' },
-  dragon: { label: 'Red Dragon Scale', description: '' },
+  default: { label: 'Default', description: 'Visual limpo e discreto.' },
+  interactive: { label: 'Interativo', description: 'Fundo vivo e transições suaves ao navegar.' },
 };
 let currentTheme = DEFAULT_THEME;
 
