@@ -407,3 +407,9 @@ html[data-rakino-theme="interactive"] .dock-item.active{transform:translateY(-3p
 .theme-preview.interactive i{animation:previewDrift 6s ease-in-out infinite alternate}
 .theme-preview.interactive b{animation:previewDrift 7.5s ease-in-out infinite alternate-reverse}
 @keyframes previewDrift{to{transform:translate(16px,10px) scale(1.15)}}
+
+/* conteúdo nunca estoura a largura no celular; toque sem zoom por duplo-toque */
+@media (max-width:640px){
+  #main{min-width:0;overflow-wrap:anywhere}
+  button,.btn,.chip-btn{touch-action:manipulation}
+}

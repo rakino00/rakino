@@ -17,7 +17,7 @@ Site pessoal estático (GitHub Pages + Firebase para login, notas, chat e record
 | Painel admin                             | `assets/js/admin.js` |
 
 ## Regras para os jogos
-- Pasta em **minúsculas-com-hífen** (GitHub Pages diferencia maiúsculas).
+- Prefira pasta em **minúsculas-com-hífen** (GitHub Pages diferencia maiúsculas; nunca renomeie só trocando a caixa no Windows).
 - No `<head>`: `<link rel="stylesheet" href="../_shared/game-shell.css"><script src="../_shared/game-shell.js"></script>` e `<a class="rakino-home" href="../../index.html#/web">← Voltar</a>`.
 - HUD começa abaixo de ~58px (o botão Voltar ocupa o canto superior esquerdo).
 - Teste em 390×780, 844×390 e 320×568; controles de toque devem usar `env(safe-area-inset-*)`.

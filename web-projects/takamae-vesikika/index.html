@@ -563,7 +563,7 @@ aimZone.addEventListener('pointermove', e => {
   if (e.pointerId !== aimTouch) return;
   aim.x = clamp(aim.x + (e.clientX - lax) * 1.4, 0, innerWidth); aim.y = clamp(aim.y + (e.clientY - lay) * 1.4, 0, innerHeight); lax = e.clientX; lay = e.clientY; moveCross();
 });
-['pointerup', 'pointercancel'].forEach(ev => aimZone.addEventListener(ev, e => { if (e.pointerId !== aimTouch) return; aimTouch = null; state.firing = false }));
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => aimZone.addEventListener(ev, e => { if (e.pointerId !== aimTouch) return; aimTouch = null; state.firing = false }));
 
 let padTouch = null;
 const pad = $('#movePad'), stick = $('#stick');
