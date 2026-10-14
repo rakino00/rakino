@@ -94,6 +94,11 @@ function coverSVG(item) {
 export const isGame = (item) => (item.tags || []).some((t) => String(t).toLowerCase() === 'jogo');
 
 const recordCache = {};
+// Atualiza os cards quando um jogo registra um novo recorde sem recarregar o site.
+window.addEventListener('rakino:game-score', (event) => {
+  const id = String(event.detail?.gameId || '').toLowerCase();
+  if (id) delete recordCache[id];
+});
 async function recordBlock(item) {
   if (!isGame(item)) return '';
   const r = recordCache[item.id] || await getRecord(item.id);

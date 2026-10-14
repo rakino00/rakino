@@ -34,9 +34,10 @@ export async function init() {
       A = authM; F = fsM;
       const app = appM.getApps?.().length ? appM.getApp() : appM.initializeApp(cfg);
       auth = A.getAuth(app);
-      db = F.initializeFirestore(app, {
-        localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }),
-      });
+      // Use the default Firestore initialization for maximum browser compatibility.
+      // persistentLocalCache can throw in private browsing, blocked IndexedDB, or
+      // restricted WebViews; that exception used to disable ALL Firebase features.
+      db = F.getFirestore(app);
       ready = true;
       return true;
     } catch (err) {

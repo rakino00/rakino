@@ -25,3 +25,8 @@ Site pessoal estático (GitHub Pages + Firebase para login, notas, chat e record
 
 ## Temas
 Só `default` e `interactive`. Modo claro/escuro é independente (`data-mode`); o tema visual é `data-rakino-theme`.
+
+
+## Firebase e diagnóstico
+
+Veja [`docs/FIREBASE-CHECKLIST.md`](docs/FIREBASE-CHECKLIST.md) para configurar domínios, publicar as regras do Firestore e entender como funcionam chat, recordes, RakinoFood e Minha Vida. Lembre-se: enviar `firestore.rules` ao GitHub não publica automaticamente as regras no Firebase Console.

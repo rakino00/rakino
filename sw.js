@@ -2,7 +2,7 @@
    Rede primeiro (alterações no GitHub aparecem na hora); o cache só serve de reserva offline.
    Firebase/Google e outras origens nunca passam por aqui.
    Aumente CACHE (v16, v17…) para forçar limpeza total. */
-const CACHE = 'rakino-v15';
+const CACHE = 'rakino-v16';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'data/web-projects.json',
   'assets/css/style.css',
